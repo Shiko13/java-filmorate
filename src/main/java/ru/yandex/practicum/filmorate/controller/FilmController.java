@@ -19,6 +19,7 @@ public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
     private int id = 1;
+    private final LocalDate BIRTHDAY_OF_CINEMATOGRAPHY = LocalDate.of(1895, 12, 28);
 
     @GetMapping
     public Collection<Film> findAllFilms() {
@@ -53,21 +54,9 @@ public class FilmController {
     }
 
     public void validationFilm(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
+        if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
             throw new ValidateException("Братья Люмьер смотрят на вас с недоумением! (кажется, вы ошиблись с датой");
         }
         log.info("Валидация пройдена");
-    }
-
-    public Collection<Film> getFilms() {
-        return films.values();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }

@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,22 +51,13 @@ public class UserController {
     }
 
     public void validationUser(User user) {
+        if (user.getLogin().contains(" ")) {
+            throw new ValidateException("Логин не должен содержать пробелов");
+        }
         if (user.getName() == null || user.getName().isBlank()) {
             log.info("Происходит изменение отображаемого имени на электронную почту");
             user.setName(user.getLogin());
         }
         log.info("Валидация пройдена");
-    }
-
-    public Collection<User> getUsers() {
-        return users.values();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }

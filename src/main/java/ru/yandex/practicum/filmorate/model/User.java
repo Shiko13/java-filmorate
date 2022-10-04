@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Past;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 
 @Data
@@ -14,12 +12,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class User {
     private int id;
-    @Email
+    @Email @NotNull
     private String email;
     @NotBlank
     private String login;
     private String name;
-    @Past
+    @PastOrPresent
 
     private LocalDate birthday;
 
