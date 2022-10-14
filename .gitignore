@@ -20,6 +20,7 @@ target/
 /checkstyle.xml
 /lombok.config
 
+
 ### STS ###
 .apt_generated
 .classpath
