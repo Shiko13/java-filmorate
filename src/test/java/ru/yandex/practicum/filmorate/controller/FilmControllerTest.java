@@ -22,6 +22,6 @@ class FilmControllerTest {
                 ValidateException.class,
                 () -> filmController.createFilm(film)
         );
-        assertEquals("Братья Люмьер смотрят на вас с недоумением! (кажется, вы ошиблись с датой", exception.getMessage());
+        assertEquals("To much early date", exception.getMessage());
     }
 }
