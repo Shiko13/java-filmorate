@@ -2,17 +2,11 @@ package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
+import java.util.Set;
 
-public interface FilmService {
-    Collection<Film> findAllFilms();
-    Film findFilmById(long id);
-    Film createFilm(Film film);
-    Film changeFilm(Film film);
-    void deleteFilmById(long id);
-    void deleteAllFilms();
-    void validationFilm(Film film);
+public interface FilmService extends Crud<Film> {
+    void validation(Film film);
     void addLike(long filmId, long userId);
     void deleteLike(long filmId, long userId);
-    Collection<Film> showTopMostLikedFilms(int count);
+    Set<Film> showTopMostLikedFilms(int count);
 }

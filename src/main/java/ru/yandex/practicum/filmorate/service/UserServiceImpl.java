@@ -3,13 +3,13 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NoSuchUserException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -24,112 +24,132 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<User> findAllUsers() {
-        log.trace("Start request GET to /users)");
+    public List<User> getAll() {
+        log.debug("Start request GET to /users)");
+
         return userStorage.findAllUsers();
     }
 
     @Override
-    public User findUserById(long id) {
-        log.trace("Start request GET to /users/{id})");
-        if (!userStorage.isContainUser(id)) {
-            log.error("Unsuccessful request GET to /users/{id}");
-            throw new NoSuchUserException("User with id = " + id + " not found");
-        }
-        return userStorage.findUserById(id);
+    public User getById(long id) {
+        log.debug("Start request GET to /users/{id}), id = " + id);
+
+        return userStorage.findUserById(id).orElseThrow(() ->
+                new NotFoundException("User with id = " + id + " not found"));
     }
 
     @Override
-    public Collection<User> findCommonFriends(long userId, long anotherUserId) {
-        log.trace("Start request GET to /users/{id}/friends/common/{otherId})");
-        Collection<User> commonFriends = new ArrayList<>();
-        for (long friend : userStorage.findUserById(userId).getFriends()) {
-            if (userStorage.findUserById(anotherUserId).getFriends().contains(friend)) {
-                commonFriends.add(userStorage.findUserById(friend));
+    public List<User> findCommonFriends(long userId, long anotherUserId) {
+        log.debug("Start request GET to /users/{id}/friends/common/{otherId}), id = " + userId + ",otherId = " + anotherUserId);
+
+        User user = userStorage.findUserById(userId).orElseThrow(() ->
+                new NotFoundException("User with id = " + userId + " not found"));
+        User anotherUser = userStorage.findUserById(anotherUserId).orElseThrow(() ->
+                new NotFoundException("User with id = " + anotherUserId + " not found"));
+
+        List<User> commonFriends = new ArrayList<>();
+        for (long friend : user.getFriends()) {
+            if (anotherUser.getFriends().contains(friend)) {
+                commonFriends.add(userStorage.findUserById(friend).orElseThrow());
             }
         }
+
         return commonFriends;
     }
 
     @Override
-    public Collection<User> findAllFriends(long id) {
-        log.trace("Start request GET to /users/{id}/friends)");
-        Collection<User> friends = new ArrayList<>();
-        for (long friend : userStorage.findUserById(id).getFriends()) {
-            friends.add(userStorage.findUserById(friend));
+    public List<User> findAllFriends(long id) {
+        log.debug("Start request GET to /users/{id}/friends), id = " + id);
+
+        List<User> friends = new ArrayList<>();
+        for (long friend : userStorage.findUserById(id).orElseThrow().getFriends()) {
+            friends.add(userStorage.findUserById(friend).orElseThrow());
         }
+
         return friends;
     }
 
     @Override
-    public User createUser(User user) {
-        log.trace("Start request POST to /users)");
+    public User create(User user) {
+        log.debug("Start request POST to /users)");
+
         if (!userStorage.isContainUser(user.getId())) {
             validationUser(user);
         } else {
-            log.error("Unsuccessful request POST to /users");
+            log.error("Unsuccessful request POST to /users, attempt to add existing user");
             throw new ValidateException("Filmorate already contains this user");
         }
+
         user.setId(counterId++);
         log.info("Process of adding new user");
+
         return userStorage.createUser(user);
     }
 
     @Override
-    public User changeUser(User user) {
-        log.trace("Start request PUT to /users)");
-        if (!userStorage.isContainUser(user.getId())) {
-            throw new NoSuchUserException("User with id = " + user.getId() + " not found");
-        }
+    public User update(User user) {
+        log.debug("Start request PUT to /users)");
+
+        userStorage.findUserById(user.getId()).orElseThrow(() ->
+                new NotFoundException("User with id = " + user.getId() + " not found"));
+
         validationUser(user);
         log.info("Process of updating the user");
+
         return userStorage.changeUser(user);
     }
 
     @Override
     public void addToFriends(long userId, long friendId) {
-        log.trace("Start request PUT to /users/{id}/friends/{friendId})");
+        log.debug("Start request PUT to /users/{id}/friends/{friendId}), id = " + userId + ",friendId = " + friendId);
+
         checkUser(userId, friendId);
-        userStorage.findUserById(userId).addToFriends(friendId);
-        userStorage.findUserById(friendId).addToFriends(userId);
+        userStorage.findUserById(userId).orElseThrow(() ->
+                new NotFoundException("User with id = " + userId + " not found")).addToFriends(friendId);
+        userStorage.findUserById(friendId).orElseThrow(() ->
+                new NotFoundException("User with id = " + friendId + " not found")).addToFriends(userId);
     }
 
     @Override
-    public void deleteAllUsers() {
-        log.trace("Start request DELETE to /users)");
+    public void deleteAll() {
+        log.debug("Start request DELETE to /users)");
         userStorage.deleteAllUsers();
     }
 
     @Override
-    public void deleteUserById(long id) {
-        log.trace("Start request DELETE to /users/{id})");
+    public void deleteById(long id) {
+        log.debug("Start request DELETE to /users/{id}), id = " + id);
         userStorage.deleteUserById(id);
     }
 
     public void checkUser(long userId, long friendId) {
-        log.trace("Process of checking user");
-        if (!userStorage.isContainUser(userId)) {
-            throw new NoSuchUserException("User with id = " + userId + " not found");
-        }
-        if (!userStorage.isContainUser(friendId)) {
-            throw new NoSuchUserException("User with id = " + friendId + " not found");
-        }
+        log.debug("Process of checking user, userId = " + userId + ",friendId = " + friendId);
+
+        userStorage.findUserById(userId).orElseThrow(() ->
+                new NotFoundException("User with id = " + userId + " not found"));
+
+        userStorage.findUserById(friendId).orElseThrow(() ->
+                new NotFoundException("User with id = " + friendId + " not found"));
+
+        log.debug("Checking successful passed");
     }
 
     @Override
     public void deleteFromFriends(long userId, long friendId) {
-        log.trace("Start request DELETE to /users/{id}/friends/{friendId})");
+        log.debug("Start request DELETE to /users/{id}/friends/{friendId}), id = " + userId + ",friendId = " + friendId);
+
         checkUser(userId, friendId);
-        userStorage.findUserById(userId).deleteFromFriends(friendId);
+        userStorage.findUserById(userId).orElseThrow().deleteFromFriends(friendId);
     }
 
     @Override
     public void validationUser(User user) {
-        log.trace("Start validation of user");
+        log.debug("Start validation of user");
         if (user.getLogin().contains(" ")) {
             log.error("Unsuccessful validation of user");
             throw new ValidateException("Login should not contains a space");
         }
+
         if (user.getName() == null || user.getName().isBlank()) {
             log.info("Process of changing empty name to email");
             user.setName(user.getLogin());

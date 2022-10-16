@@ -3,17 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NoLikeException;
-import ru.yandex.practicum.filmorate.exception.NoSuchFilmException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -28,104 +25,95 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> findAllFilms() {
-        log.trace("Start request GET to /films)");
-        return filmStorage.findAllFilms();
+    public List<Film> getAll() {
+        log.debug("Start request GET to /films)");
+
+        return filmStorage.findAll();
     }
 
     @Override
-    public Film findFilmById(long id) {
-        log.trace("Start request GET to /films/{id}");
-        if (!filmStorage.isContainFilm(id)) {
-            log.error("Unsuccessful request GET to /films/{id}");
-            throw new NoSuchFilmException("Film with id = " + id + " not found");
-        }
-        return filmStorage.findFilmById(id);
+    public Film getById(long id) {
+        log.debug("Start request GET to /films/{id}, id = " + id);
+
+        return filmStorage.findById(id).orElseThrow(() ->
+                new NotFoundException("Film with id = " + id + " not found"));
     }
 
     @Override
-    public Collection<Film> showTopMostLikedFilms(int count) {
-        log.trace("Start request GET to /films/popular");
-        Set<Film> mostLiked = new TreeSet<>((f1, f2) -> {
-            if (f1.getLikes().size() < f2.getLikes().size()) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-        mostLiked.addAll(filmStorage.findAllFilms());
-        return mostLiked.stream()
-                .limit(count)
-                .collect(Collectors.toSet());
+    public Set<Film> showTopMostLikedFilms(int count) {
+        log.debug("Start request GET to /films/popular, count = " + count);
+
+        return filmStorage.showTopMostLikedFilms(count);
     }
 
     @Override
-    public Film createFilm(Film film) {
-        log.trace("Start request POST to /films");
-        if (!filmStorage.isContainFilm(film.getId())) {
-            validationFilm(film);
+    public Film create(Film film) {
+        log.debug("Start request POST to /films");
+        if (!filmStorage.isExist(film.getId())) {
+            validation(film);
         } else {
-            log.error("Unsuccessful request POST to /films");
+            log.error("Unsuccessful request POST to /films, attempt to add existing film");
             throw new ValidateException("Filmorate already contains this film");
         }
         film.setId(id++);
         log.info("Process of adding new film");
-        filmStorage.createFilm(film);
+        filmStorage.create(film);
+
         return film;
     }
 
     @Override
-    public Film changeFilm(Film film) {
-        log.trace("Start request GET to /films/{id}");
-        if (!filmStorage.isContainFilm(film.getId())) {
-            log.error("Unsuccessful request POST to /films/{id}");
-            throw new NoSuchFilmException("Film with id = " + film.getId() + " not found");
-        }
-        validationFilm(film);
+    public Film update(Film film) {
+        log.debug("Start request GET to /films/{id}, id = " + id);
+        filmStorage.findById(film.getId()).orElseThrow(() ->
+                new NotFoundException("Film with id = " + film.getId() + " not found"));
+
+        validation(film);
         log.info("Process of updating the film");
-        filmStorage.changeFilm(film);
+        filmStorage.update(film);
+
         return film;
     }
 
     @Override
     public void addLike(long filmId, long userId) {
-        log.trace("Start request PUT to /films/{id}/like/{userId}");
-        filmStorage.findFilmById(filmId).addLike(userId);
+        log.debug("Start request PUT to /films/{id}/like/{userId}, id = " + id + " ,userId = " + userId);
+        filmStorage.findById(filmId).orElseThrow(() ->
+                new NotFoundException("Film with id = " + filmId + " not found")).addLike(userId);
     }
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        log.trace("Start request DELETE to /films/{id}/like/{userId}");
-        if (!filmStorage.isContainFilm(filmId)) {
-            log.error("Unsuccessful request DELETE to /films/{id}/like/{userId}");
-            throw new NoSuchFilmException("Film with id = " + filmId + " not found");
-        }
-        if (!filmStorage.findFilmById(filmId).isContainsLike(userId)) {
-            log.error("Unsuccessful request DELETE to /films/{id}/like/{userId}");
-            throw new NoLikeException("Not found likes from user with id = " + userId +
+        log.debug("Start request DELETE to /films/{id}/like/{userId}, id = " + id + ", userId = " + userId);
+        Film film = filmStorage.findById(filmId).orElseThrow(() ->
+                new NotFoundException("Film with id = " + filmId + " not found"));
+
+        if (!film.isContainsLike(userId)) {
+            log.error("Unsuccessful request DELETE to /films/{id}/like/{userId}, this user haven't likes");
+            throw new NotFoundException("Not found likes from user with id = " + userId +
                     " to film with id = " + filmId);
         }
-        filmStorage.findFilmById(filmId).deleteLike(userId);
+        film.deleteLike(userId);
     }
 
     @Override
-    public void deleteFilmById(long id) {
-        log.trace("Start request DELETE to /films/{id}");
-        filmStorage.deleteFilmById(id);
+    public void deleteById(long id) {
+        log.debug("Start request DELETE to /films/{id}, id = " + id);
+        filmStorage.deleteById(id);
     }
 
     @Override
-    public void deleteAllFilms() {
-        log.trace("Start request DELETE to /films");
-        filmStorage.deleteAllFilms();
+    public void deleteAll() {
+        log.debug("Start request DELETE to /films");
+        filmStorage.deleteAll();
     }
 
     @Override
-    public void validationFilm(Film film) {
-        log.trace("Start validation of film");
+    public void validation(Film film) {
+        log.debug("Start validation of film");
         if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
-            throw new ValidateException("To much early date");
+            throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
         }
-        log.trace("Validation successful passed");
+        log.debug("Validation successful passed");
     }
 }
