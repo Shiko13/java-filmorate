@@ -35,8 +35,9 @@ public class FilmServiceImpl implements FilmService {
     public Film getById(long id) {
         log.debug("Start request GET to /films/{id}, id = " + id);
 
-        return filmStorage.findById(id).orElseThrow(() ->
-                new NotFoundException("Film with id = " + id + " not found"));
+        return filmStorage.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Film with id = " + id + " not found"));
     }
 
     @Override
@@ -49,12 +50,12 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film create(Film film) {
         log.debug("Start request POST to /films");
-        if (!filmStorage.isExist(film.getId())) {
-            validation(film);
-        } else {
-            log.error("Unsuccessful request POST to /films, attempt to add existing film");
+        if (filmStorage.isExist(film.getId())) {
+            log.warn("Unsuccessful request POST to /films, attempt to add existing film");
             throw new ValidateException("Filmorate already contains this film");
         }
+        throwIfNotValid(film);
+
         film.setId(id++);
         log.info("Process of adding new film");
         filmStorage.create(film);
@@ -65,10 +66,11 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film update(Film film) {
         log.debug("Start request GET to /films/{id}, id = " + id);
-        filmStorage.findById(film.getId()).orElseThrow(() ->
-                new NotFoundException("Film with id = " + film.getId() + " not found"));
+        filmStorage.findById(film.getId())
+                .orElseThrow(() ->
+                        new NotFoundException("Film with id = " + film.getId() + " not found"));
+        throwIfNotValid(film);
 
-        validation(film);
         log.info("Process of updating the film");
         filmStorage.update(film);
 
@@ -78,18 +80,21 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public void addLike(long filmId, long userId) {
         log.debug("Start request PUT to /films/{id}/like/{userId}, id = " + id + " ,userId = " + userId);
-        filmStorage.findById(filmId).orElseThrow(() ->
-                new NotFoundException("Film with id = " + filmId + " not found")).addLike(userId);
+        filmStorage.findById(filmId)
+                .orElseThrow(() ->
+                        new NotFoundException("Film with id = " + filmId + " not found")).addLike(userId);
     }
 
     @Override
     public void deleteLike(long filmId, long userId) {
         log.debug("Start request DELETE to /films/{id}/like/{userId}, id = " + id + ", userId = " + userId);
-        Film film = filmStorage.findById(filmId).orElseThrow(() ->
-                new NotFoundException("Film with id = " + filmId + " not found"));
+
+        Film film = filmStorage.findById(filmId)
+                .orElseThrow(() ->
+                        new NotFoundException("Film with id = " + filmId + " not found"));
 
         if (!film.isContainsLike(userId)) {
-            log.error("Unsuccessful request DELETE to /films/{id}/like/{userId}, this user haven't likes");
+            log.warn("Unsuccessful request DELETE to /films/{id}/like/{userId}, this user haven't likes");
             throw new NotFoundException("Not found likes from user with id = " + userId +
                     " to film with id = " + filmId);
         }
@@ -109,11 +114,13 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public void validation(Film film) {
+    public void throwIfNotValid(Film film) {
         log.debug("Start validation of film");
+
         if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
             throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
         }
+
         log.debug("Validation successful passed");
     }
 }

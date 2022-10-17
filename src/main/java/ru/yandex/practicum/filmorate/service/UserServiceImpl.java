@@ -34,23 +34,28 @@ public class UserServiceImpl implements UserService {
     public User getById(long id) {
         log.debug("Start request GET to /users/{id}), id = " + id);
 
-        return userStorage.findUserById(id).orElseThrow(() ->
-                new NotFoundException("User with id = " + id + " not found"));
+        return userStorage.findUserById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + id + " not found"));
     }
 
     @Override
     public List<User> findCommonFriends(long userId, long anotherUserId) {
         log.debug("Start request GET to /users/{id}/friends/common/{otherId}), id = " + userId + ",otherId = " + anotherUserId);
 
-        User user = userStorage.findUserById(userId).orElseThrow(() ->
-                new NotFoundException("User with id = " + userId + " not found"));
-        User anotherUser = userStorage.findUserById(anotherUserId).orElseThrow(() ->
-                new NotFoundException("User with id = " + anotherUserId + " not found"));
+        User user = userStorage
+                .findUserById(userId).orElseThrow(() ->
+                        new NotFoundException("User with id = " + userId + " not found"));
+        User anotherUser = userStorage.findUserById(anotherUserId)
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + anotherUserId + " not found"));
 
         List<User> commonFriends = new ArrayList<>();
+
         for (long friend : user.getFriends()) {
             if (anotherUser.getFriends().contains(friend)) {
-                commonFriends.add(userStorage.findUserById(friend).orElseThrow());
+                userStorage.findUserById(friend)
+                        .ifPresent(commonFriends::add);
             }
         }
 
@@ -61,9 +66,13 @@ public class UserServiceImpl implements UserService {
     public List<User> findAllFriends(long id) {
         log.debug("Start request GET to /users/{id}/friends), id = " + id);
 
+        User user = userStorage
+                .findUserById(id).orElseThrow(() ->
+                        new NotFoundException("User with id = " + id + " not found"));
         List<User> friends = new ArrayList<>();
-        for (long friend : userStorage.findUserById(id).orElseThrow().getFriends()) {
-            friends.add(userStorage.findUserById(friend).orElseThrow());
+
+        for (long friend : user.getFriends()) {
+            userStorage.findUserById(friend).ifPresent(friends::add);
         }
 
         return friends;
@@ -73,12 +82,11 @@ public class UserServiceImpl implements UserService {
     public User create(User user) {
         log.debug("Start request POST to /users)");
 
-        if (!userStorage.isContainUser(user.getId())) {
-            validationUser(user);
-        } else {
-            log.error("Unsuccessful request POST to /users, attempt to add existing user");
+        if (userStorage.isExist(user.getId())) {
+            log.warn("Unsuccessful request POST to /users, attempt to add existing user");
             throw new ValidateException("Filmorate already contains this user");
         }
+        throwIfNotValid(user);
 
         user.setId(counterId++);
         log.info("Process of adding new user");
@@ -90,10 +98,11 @@ public class UserServiceImpl implements UserService {
     public User update(User user) {
         log.debug("Start request PUT to /users)");
 
-        userStorage.findUserById(user.getId()).orElseThrow(() ->
-                new NotFoundException("User with id = " + user.getId() + " not found"));
+        userStorage.findUserById(user.getId())
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + user.getId() + " not found"));
 
-        validationUser(user);
+        throwIfNotValid(user);
         log.info("Process of updating the user");
 
         return userStorage.changeUser(user);
@@ -103,11 +112,15 @@ public class UserServiceImpl implements UserService {
     public void addToFriends(long userId, long friendId) {
         log.debug("Start request PUT to /users/{id}/friends/{friendId}), id = " + userId + ",friendId = " + friendId);
 
-        checkUser(userId, friendId);
-        userStorage.findUserById(userId).orElseThrow(() ->
-                new NotFoundException("User with id = " + userId + " not found")).addToFriends(friendId);
-        userStorage.findUserById(friendId).orElseThrow(() ->
-                new NotFoundException("User with id = " + friendId + " not found")).addToFriends(userId);
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + userId + " not found"));
+        User friend = userStorage.findUserById(friendId)
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + friendId + " not found"));
+
+        user.addToFriends(friendId);
+        friend.addToFriends(userId);
     }
 
     @Override
@@ -122,31 +135,25 @@ public class UserServiceImpl implements UserService {
         userStorage.deleteUserById(id);
     }
 
-    public void checkUser(long userId, long friendId) {
-        log.debug("Process of checking user, userId = " + userId + ",friendId = " + friendId);
-
-        userStorage.findUserById(userId).orElseThrow(() ->
-                new NotFoundException("User with id = " + userId + " not found"));
-
-        userStorage.findUserById(friendId).orElseThrow(() ->
-                new NotFoundException("User with id = " + friendId + " not found"));
-
-        log.debug("Checking successful passed");
-    }
-
     @Override
     public void deleteFromFriends(long userId, long friendId) {
         log.debug("Start request DELETE to /users/{id}/friends/{friendId}), id = " + userId + ",friendId = " + friendId);
 
-        checkUser(userId, friendId);
-        userStorage.findUserById(userId).orElseThrow().deleteFromFriends(friendId);
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + userId + " not found"));
+        userStorage.findUserById(friendId)
+                .orElseThrow(() ->
+                        new NotFoundException("User with id = " + friendId + " not found"));
+
+        user.deleteFromFriends(friendId);
     }
 
     @Override
-    public void validationUser(User user) {
+    public void throwIfNotValid(User user) {
         log.debug("Start validation of user");
         if (user.getLogin().contains(" ")) {
-            log.error("Unsuccessful validation of user");
+            log.warn("Unsuccessful validation of user");
             throw new ValidateException("Login should not contains a space");
         }
 

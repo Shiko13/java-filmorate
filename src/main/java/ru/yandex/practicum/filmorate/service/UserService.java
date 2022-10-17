@@ -8,7 +8,5 @@ public interface UserService extends Crud<User> {
     void deleteFromFriends(long userId, long friendId);
     List<User> findAllFriends(long id);
     List<User> findCommonFriends(long userId, long anotherUserId);
-    void validationUser(User user);
-    void checkUser(long userId, long friendId);
-
+    void throwIfNotValid(User user);
 }
