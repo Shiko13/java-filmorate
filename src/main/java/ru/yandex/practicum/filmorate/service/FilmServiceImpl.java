@@ -33,7 +33,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film getById(long id) {
-        log.debug("Start request GET to /films/{id}, id = " + id);
+        log.debug("Start request GET to /films/{}", id);
 
         return filmStorage.findById(id)
                 .orElseThrow(() ->
@@ -65,7 +65,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film update(Film film) {
-        log.debug("Start request GET to /films/{id}, id = " + id);
+        log.debug("Start request GET to /films/{}", id);
         filmStorage.findById(film.getId())
                 .orElseThrow(() ->
                         new NotFoundException("Film with id = " + film.getId() + " not found"));
@@ -79,7 +79,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void addLike(long filmId, long userId) {
-        log.debug("Start request PUT to /films/{id}/like/{userId}, id = " + id + " ,userId = " + userId);
+        log.debug("Start request PUT to /films/{}/like/{}", id, userId);
         filmStorage.findById(filmId)
                 .orElseThrow(() ->
                         new NotFoundException("Film with id = " + filmId + " not found")).addLike(userId);
@@ -87,14 +87,14 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        log.debug("Start request DELETE to /films/{id}/like/{userId}, id = " + id + ", userId = " + userId);
+        log.debug("Start request DELETE to /films/{}/like/{}", id, userId);
 
         Film film = filmStorage.findById(filmId)
                 .orElseThrow(() ->
                         new NotFoundException("Film with id = " + filmId + " not found"));
 
         if (!film.isContainsLike(userId)) {
-            log.warn("Unsuccessful request DELETE to /films/{id}/like/{userId}, this user haven't likes");
+            log.warn("Unsuccessful request DELETE to /films/{}/like/{}, this user haven't likes", id, userId);
             throw new NotFoundException("Not found likes from user with id = " + userId +
                     " to film with id = " + filmId);
         }
@@ -103,7 +103,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void deleteById(long id) {
-        log.debug("Start request DELETE to /films/{id}, id = " + id);
+        log.debug("Start request DELETE to /films/{}", id);
         filmStorage.deleteById(id);
     }
 

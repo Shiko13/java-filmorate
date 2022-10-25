@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getById(long id) {
-        log.debug("Start request GET to /users/{id}), id = " + id);
+        log.debug("Start request GET to /users/{}", id);
 
         return userStorage.findUserById(id)
                 .orElseThrow(() ->
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> findCommonFriends(long userId, long anotherUserId) {
-        log.debug("Start request GET to /users/{id}/friends/common/{otherId}), id = " + userId + ",otherId = " + anotherUserId);
+        log.debug("Start request GET to /users/{}/friends/common/{}", userId, anotherUserId);
 
         User user = userStorage
                 .findUserById(userId).orElseThrow(() ->
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> findAllFriends(long id) {
-        log.debug("Start request GET to /users/{id}/friends), id = " + id);
+        log.debug("Start request GET to /users/{}/friends)", id);
 
         User user = userStorage
                 .findUserById(id).orElseThrow(() ->
@@ -110,7 +110,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addToFriends(long userId, long friendId) {
-        log.debug("Start request PUT to /users/{id}/friends/{friendId}), id = " + userId + ",friendId = " + friendId);
+        log.debug("Start request PUT to /users/{}/friends/{}", userId, friendId);
 
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() ->
@@ -131,13 +131,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(long id) {
-        log.debug("Start request DELETE to /users/{id}), id = " + id);
+        log.debug("Start request DELETE to /users/{}", id);
         userStorage.deleteUserById(id);
     }
 
     @Override
     public void deleteFromFriends(long userId, long friendId) {
-        log.debug("Start request DELETE to /users/{id}/friends/{friendId}), id = " + userId + ",friendId = " + friendId);
+        log.debug("Start request DELETE to /users/{}/friends/{}", userId, friendId);
 
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() ->
