@@ -2,8 +2,8 @@
 Filmorate — social network with rating of films based on likes from users. 
 Users can add each other to friendlist.
 
-# ER-diagram ([link](https://miro.com/app/board/uXjVPIgCEC0=/) on Miro)
-![Filmorate](https://user-images.githubusercontent.com/100466117/198703173-ad321ce8-9884-4961-a54e-c1e03181fda3.jpg)
+# ER-diagram 
+<img width="398" alt="image" src="https://user-images.githubusercontent.com/100466117/200110756-a59e822a-7cc3-42e0-b873-e9886ced88bd.png">
 
 # SQL requests examples
 
