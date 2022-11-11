@@ -6,7 +6,7 @@ import java.util.List;
 public interface UserService extends Crud<User> {
     void addToFriends(long userId, long friendId);
     void deleteFromFriends(long userId, long friendId);
-    List<User> findAllFriends(long id);
-    List<User> findCommonFriends(long userId, long anotherUserId);
+    List<User> getAllFriends(long id);
+    List<User> getCommonFriends(long userId, long anotherUserId);
     void throwIfNotValid(User user);
 }

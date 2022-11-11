@@ -1,15 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.util.Collection;
 
 @RestController
-@RequestMapping("/films")
+@Slf4j
 public class FilmController {
 
     private final FilmService filmService;
@@ -19,50 +22,71 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @GetMapping
+    @GetMapping("/films")
     public Collection<Film> findAllFilms() {
         return filmService.getAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("films/{id}")
     public Film findFilmById(@PathVariable long id) {
         return filmService.getById(id);
     }
 
-    @GetMapping("/popular")
+    @GetMapping("films/popular")
     public Collection<Film> showTopMostLikedFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.showTopMostLikedFilms(count);
+        return filmService.getTopMostLikedFilms(count);
     }
 
-    @PostMapping
+    @PostMapping("/films")
     public Film createFilm(@Valid @RequestBody Film film) {
         return filmService.create(film);
     }
 
-    @PutMapping
+    @PutMapping("/films")
     public Film changeFilm(@Valid @RequestBody Film film) {
         return filmService.update(film);
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping("films/{id}/like/{userId}")
     public void addLike(@PathVariable long id,
                         @PathVariable long userId) {
         filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping("films/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id,
                            @PathVariable long userId) {
         filmService.deleteLike(id, userId);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("films/{id}")
     public void deleteFilmById(@PathVariable long id) {
         filmService.deleteById(id);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/films")
     public void deleteAllFilms() {
         filmService.deleteAll();
+    }
+
+    @GetMapping("/mpa")
+    public Collection<Mpa> findAllMpaRatings() {
+        return filmService.getMpaRatings();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public Mpa findMpaRatingById(@PathVariable int id) {
+        log.debug("Start request GET to /mpa/, with id = {}", id);
+        return filmService.getMpaRatingById(id);
+    }
+
+    @GetMapping("/genres")
+    public Collection<Genre> findAllGenres() {
+        return filmService.getAllGenres();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre findGenreById(@PathVariable long id) {
+        return filmService.getGenreById(id);
     }
 }

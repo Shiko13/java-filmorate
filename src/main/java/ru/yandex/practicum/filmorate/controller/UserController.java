@@ -32,12 +32,12 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> findCommonFriends(@PathVariable long id,
                                               @PathVariable long otherId) {
-        return userService.findCommonFriends(id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 
     @GetMapping("/{id}/friends")
     public Collection<User> findAllFriends(@PathVariable long id) {
-        return userService.findAllFriends(id);
+        return userService.getAllFriends(id);
     }
 
     @PostMapping
