@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -17,8 +17,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
-@Component("userDb")
-@AllArgsConstructor
+@Repository("userDb")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -27,7 +27,7 @@ public class UserDbStorage implements UserStorage {
     public List<User> findAllUsers() {
         String sqlQuery = "select * from users";
 
-        Set<User> usersSet = jdbcTemplate.query(sqlQuery, this::mapRowToUserSet);
+        Set<User> usersSet = jdbcTemplate.query(sqlQuery, UserDbStorage::mapRowToUserSet);
         return new ArrayList<>(usersSet);
     }
 
@@ -37,7 +37,7 @@ public class UserDbStorage implements UserStorage {
 
         User user;
         try {
-            user = jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, userId);
+            user = jdbcTemplate.queryForObject(sqlQuery, UserDbStorage::mapRowToUser, userId);
         } catch (Exception e) {
             throw new NotFoundException(String.format("User with id = %d not found", userId));
         }
@@ -87,7 +87,7 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(sqlQuery, userId);
     }
 
-    public User mapRowToUser(ResultSet resultSet, long rowNum) {
+    public static User mapRowToUser(ResultSet resultSet, long rowNum) {
         User user;
         try {
             user = User.builder().
@@ -103,7 +103,7 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    public Set<User> mapRowToUserSet(ResultSet resultSet) throws SQLException {
+    public static Set<User> mapRowToUserSet(ResultSet resultSet) throws SQLException {
         Set<User> users = new HashSet<>();
 
         while (resultSet.next()) {

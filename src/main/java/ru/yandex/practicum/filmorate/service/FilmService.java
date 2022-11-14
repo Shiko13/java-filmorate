@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface FilmService extends Crud<Film> {
-    void throwIfNotValidDate(Film film);
     void addLike(long filmId, long userId);
     void deleteLike(long filmId, long userId);
-    Set<Film> getTopMostLikedFilms(int count);
+    Set<Film> getTopMostLiked(int count);
     List<Genre> getAllGenres();
     Genre getGenreById(long genre_id);
     List<Mpa> getMpaRatings();

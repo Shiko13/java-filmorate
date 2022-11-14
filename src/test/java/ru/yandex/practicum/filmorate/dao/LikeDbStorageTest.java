@@ -61,9 +61,9 @@ public class LikeDbStorageTest {
                 .duration(69)
                 .mpa(mpa)
                 .build();
-        filmDbStorage.createFilm(film);
+        filmDbStorage.create(film);
 
-        Optional<Like> optionalLike = Optional.of(likeDbStorage.createLike(1L, 2L));
+        Optional<Like> optionalLike = Optional.of(likeDbStorage.create(1L, 2L));
 
         assertThat(optionalLike)
                 .isPresent()

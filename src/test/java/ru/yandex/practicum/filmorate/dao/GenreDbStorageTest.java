@@ -20,7 +20,7 @@ public class GenreDbStorageTest {
 
     @Test
     public void genreShouldBeCorrect() {
-        Optional<Genre> optionalGenre = Optional.of(genreDbStorage.readGenreById(4));
+        Optional<Genre> optionalGenre = Optional.of(genreDbStorage.readById(4));
 
         assertThat(optionalGenre)
                 .isPresent()

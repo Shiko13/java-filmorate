@@ -36,7 +36,7 @@ public class FilmDbStorageTest {
                 .mpa(mpa)
                 .build();
 
-        Optional<Film> optionalFilm = Optional.of(filmDbStorage.createFilm(film));
+        Optional<Film> optionalFilm = Optional.of(filmDbStorage.create(film));
 
         assertThat(optionalFilm)
                 .isPresent()
@@ -44,7 +44,7 @@ public class FilmDbStorageTest {
                         assertThat(f).hasFieldOrPropertyWithValue("name", "Hot in Las Vegas")
                 );
 
-        Optional<Film> optionalFilmById = Optional.of(filmDbStorage.findFilmById(1L));
+        Optional<Film> optionalFilmById = Optional.of(filmDbStorage.findById(1L));
 
         assertThat(optionalFilmById)
                 .isPresent()
@@ -61,7 +61,7 @@ public class FilmDbStorageTest {
                 .mpa(mpa)
                 .build();
 
-        Optional<Film> testUpdateFilm = Optional.of(filmDbStorage.createFilm(updateFilm));
+        Optional<Film> testUpdateFilm = Optional.of(filmDbStorage.create(updateFilm));
 
         assertThat(testUpdateFilm)
                 .isPresent()

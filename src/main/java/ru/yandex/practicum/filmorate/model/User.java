@@ -17,6 +17,6 @@ public class User {
     private final String login;
     @Setter
     private String name;
-    @PastOrPresent
+    @PastOrPresent @NotNull
     private final LocalDate birthday;
 }

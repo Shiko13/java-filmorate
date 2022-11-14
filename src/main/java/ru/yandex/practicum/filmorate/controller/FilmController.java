@@ -1,92 +1,86 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import java.time.LocalDate;
 import java.util.Collection;
 
-@RestController
 @Slf4j
+@Validated
+@RestController
+@RequestMapping("/films")
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmController {
 
+    private final LocalDate BIRTHDAY_OF_CINEMATOGRAPHY = LocalDate.of(1895, 12, 28);
     private final FilmService filmService;
-
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
-
-    @GetMapping("/films")
-    public Collection<Film> findAllFilms() {
+    @GetMapping
+    public Collection<Film> findAll() {
         return filmService.getAll();
     }
 
-    @GetMapping("films/{id}")
-    public Film findFilmById(@PathVariable long id) {
+    @GetMapping("/{id}")
+    public Film findById(@PathVariable long id) {
         return filmService.getById(id);
     }
 
-    @GetMapping("films/popular")
-    public Collection<Film> showTopMostLikedFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getTopMostLikedFilms(count);
+    @GetMapping("/popular")
+    public Collection<Film> showTopMostLiked(@Positive @RequestParam(defaultValue = "10") int count) {
+        return filmService.getTopMostLiked(count);
     }
 
-    @PostMapping("/films")
-    public Film createFilm(@Valid @RequestBody Film film) {
+    @PostMapping
+    public Film create(@Valid @RequestBody Film film) {
+        throwIfNotValidDate(film);
+
         return filmService.create(film);
     }
 
-    @PutMapping("/films")
-    public Film changeFilm(@Valid @RequestBody Film film) {
+    @PutMapping
+    public Film change(@Valid @RequestBody Film film) {
+        throwIfNotValidDate(film);
+
         return filmService.update(film);
     }
 
-    @PutMapping("films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable long id,
                         @PathVariable long userId) {
         filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id,
                            @PathVariable long userId) {
         filmService.deleteLike(id, userId);
     }
 
-    @DeleteMapping("films/{id}")
-    public void deleteFilmById(@PathVariable long id) {
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable long id) {
         filmService.deleteById(id);
     }
 
-    @DeleteMapping("/films")
-    public void deleteAllFilms() {
+    @DeleteMapping
+    public void deleteAll() {
         filmService.deleteAll();
     }
 
-    @GetMapping("/mpa")
-    public Collection<Mpa> findAllMpaRatings() {
-        return filmService.getMpaRatings();
-    }
+    public void throwIfNotValidDate(Film film) {
+        log.debug("Start validation of film");
 
-    @GetMapping("/mpa/{id}")
-    public Mpa findMpaRatingById(@PathVariable int id) {
-        log.debug("Start request GET to /mpa/, with id = {}", id);
-        return filmService.getMpaRatingById(id);
-    }
+        if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
+            throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
+        }
 
-    @GetMapping("/genres")
-    public Collection<Genre> findAllGenres() {
-        return filmService.getAllGenres();
-    }
-
-    @GetMapping("/genres/{id}")
-    public Genre findGenreById(@PathVariable long id) {
-        return filmService.getGenreById(id);
+        log.debug("Validation successful passed");
     }
 }

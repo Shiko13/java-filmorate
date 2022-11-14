@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -19,13 +19,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component("filmDb")
-@AllArgsConstructor
+@Repository("filmDb")
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Film findFilmById(long filmId) {
+    public Film findById(long filmId) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
                 "mr.MPA_RATING_ID, mr.MPA_RATING_NAME\n" +
                 "from films as f\n" +
@@ -44,7 +45,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findAllFilms() {
+    public List<Film> findAll() {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
                 "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, g.GENRE_ID, g.GENRE_NAME\n" +
                 "from films as f\n" +
@@ -55,15 +56,11 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
         Set<Film> films = mapRowToFilmSet(sqlRowSet);
 
-        for (Film film : films) {
-            setGenreFilm(film);
-        }
-
         return new ArrayList<>(films);
     }
 
     @Override
-    public Film createFilm(Film film) {
+    public Film create(Film film) {
         String sqlQuery = "insert into films(film_name, description, release_date, duration, MPA_RATING) " +
                 "values (?, ?, ?, ?, ?)";
 
@@ -107,31 +104,36 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void updateFilm(Film film) {
+    public void update(Film film) {
         String sqlQuery = "update films set film_name = ?, description = ?, release_date = ?, duration = ?, " +
                 "MPA_RATING = ? where film_id = ?";
 
-        findFilmById(film.getId());
-
-        jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(),
+        int numRow = jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
+        if (numRow == 0) {
+            throw new NotFoundException(String.format("Film with id = %d not found", film.getId()));
+        }
         updateGenres(film);
     }
 
     @Override
-    public void deleteFilmById(long filmId) {
+    public void deleteById(long filmId) {
         String sqlQuery = "delete from films where film_id = ?";
-        jdbcTemplate.update(sqlQuery, filmId);
+
+        int numRow = jdbcTemplate.update(sqlQuery, filmId);
+        if (numRow == 0) {
+            throw new NotFoundException(String.format("Film with id = %d not found", filmId));
+        }
     }
 
     @Override
-    public void deleteAllFilms() {
+    public void deleteAll() {
         String sqlQuery = "delete from films";
         jdbcTemplate.update(sqlQuery);
     }
 
     @Override
-    public Set<Film> readTopMostLikedFilms(int count) {
+    public Set<Film> readTopMostLiked(int count) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, mr.MPA_RATING_ID, " +
                 "mr.MPA_RATING_NAME\n" +
                 "from FILMS as f\n" +
@@ -144,14 +146,10 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
         Set<Film> popularFilms = mapRowToFilmSet(sqlRowSet);
 
-        for (Film film : popularFilms) {
-            setGenreFilm(film);
-        }
-
         return popularFilms;
     }
 
-    private Film mapRowToFilm(SqlRowSet sqlRowSet) {
+    private static Film mapRowToFilm(SqlRowSet sqlRowSet) {
         sqlRowSet.next();
         Film film;
         try {
@@ -170,30 +168,10 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Film with those parameters not found");
         }
 
-        setGenreFilm(film);
         return film;
     }
 
-    private void setGenreFilm(Film film) {
-        String sqlQueryGenre = "select * from film_genres as fg\n" +
-                "join genres as g on g.genre_id = fg.genre_id\n" +
-                "where fg.film_id = ?";
-
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQueryGenre, film.getId());
-        Set<Genre> genres = new LinkedHashSet<>();
-
-        while (sqlRowSet.next()) {
-            Genre genre = Genre.builder().
-                    id(sqlRowSet.getInt("genre_id")).
-                    name(sqlRowSet.getString("genre_name")).
-                    build();
-            genres.add(genre);
-        }
-
-        film.setGenres(new ArrayList<>(genres));
-    }
-
-    private Set<Film> mapRowToFilmSet(SqlRowSet sqlRowSet) {
+    private static Set<Film> mapRowToFilmSet(SqlRowSet sqlRowSet) {
         Set<Film> films = new LinkedHashSet<>();
 
         while (sqlRowSet.next()) {

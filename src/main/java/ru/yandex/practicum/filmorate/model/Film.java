@@ -1,14 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -18,7 +17,7 @@ public class Film {
     private long id;
     @NotBlank
     private final String name;
-    @Size(max = 200)
+    @Size(max = 200) @NotNull
     private final String description;
     @NotNull
     private final LocalDate releaseDate;
@@ -26,5 +25,6 @@ public class Film {
     private final int duration;
     @NotNull
     private final Mpa mpa;
-    private List<Genre> genres;
+    @Builder.Default
+    private List<Genre> genres = new ArrayList<>();
 }

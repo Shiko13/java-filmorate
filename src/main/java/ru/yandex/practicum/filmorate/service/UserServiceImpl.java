@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -41,14 +40,14 @@ public class UserServiceImpl implements UserService {
     public List<User> getCommonFriends(long userId, long anotherUserId) {
         log.debug("Start request GET to /users/{}/friends/common/{}", userId, anotherUserId);
 
-        return friendshipStorage.readCommonFriends(userId, anotherUserId);
+        return friendshipStorage.readCommon(userId, anotherUserId);
     }
 
     @Override
     public List<User> getAllFriends(long id) {
         log.debug("Start request GET to /users/{}/friends", id);
 
-        return friendshipStorage.readAllFriends(id);
+        return friendshipStorage.readAll(id);
     }
 
     @Override
@@ -56,7 +55,6 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request POST to /users, with id = {}, email = {}, login = {}, name = {}, birthday = {}",
                 user.getId(), user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
 
-        throwIfNotValid(user);
         return userStorage.createUser(user);
     }
 
@@ -76,7 +74,7 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("Id should be positive");
         }
 
-        friendshipStorage.createFriend(userId, friendId);
+        friendshipStorage.create(userId, friendId);
     }
 
     @Override
@@ -97,22 +95,6 @@ public class UserServiceImpl implements UserService {
     public void deleteFromFriends(long userId, long friendId) {
         log.debug("Start request DELETE to /users/{}/friends/{}", userId, friendId);
 
-        friendshipStorage.deleteFromFriends(userId, friendId);
-    }
-
-    @Override
-    public void throwIfNotValid(User user) {
-        log.debug("Start validation of user");
-
-        if (user.getLogin().contains(" ")) {
-            log.warn("Unsuccessful validation of user");
-            throw new ValidateException("Login should not contains a space");
-        }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.info("Process of changing empty name to email");
-            user.setName(user.getLogin());
-        }
-        log.info("Validation successful passed");
+        friendshipStorage.delete(userId, friendId);
     }
 }

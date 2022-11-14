@@ -5,6 +5,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.util.List;
 
 public interface MpaRatingStorage {
-    List<Mpa> readAllMpaRatings();
-    Mpa readMpaRatingById(int mpaRatingId);
+    List<Mpa> readAll();
+    Mpa readById(int mpaRatingId);
 }

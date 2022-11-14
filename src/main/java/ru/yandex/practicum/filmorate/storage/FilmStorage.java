@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 public interface FilmStorage {
-    Film findFilmById(long id);
-    List<Film> findAllFilms();
-    Film createFilm(Film film);
-    void updateFilm(Film film);
-    void deleteFilmById(long id);
-    void deleteAllFilms();
-    Set<Film> readTopMostLikedFilms(int count);
+    Film findById(long id);
+    List<Film> findAll();
+    Film create(Film film);
+    void update(Film film);
+    void deleteById(long id);
+    void deleteAll();
+    Set<Film> readTopMostLiked(int count);
 }

@@ -1,31 +1,31 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.Collection;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserController {
 
     private final UserService userService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
     @GetMapping
-    public Collection<User> findAllUsers() {
+    public Collection<User> findAll() {
         return userService.getAll();
     }
 
     @GetMapping("/{id}")
-    public User findUserById(@PathVariable long id) {
+    public User findById(@PathVariable long id) {
         return userService.getById(id);
     }
 
@@ -41,12 +41,14 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
+        throwIfNotValid(user);
+
         return userService.create(user);
     }
 
     @PutMapping
-    public User changeUser(@Valid @RequestBody User user) {
+    public User update(@Valid @RequestBody User user) {
         return userService.update(user);
     }
 
@@ -57,12 +59,12 @@ public class UserController {
     }
 
     @DeleteMapping
-    public void deleteAllUsers() {
+    public void deleteAll() {
         userService.deleteAll();
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUserById(@PathVariable long id) {
+    public void deleteById(@PathVariable long id) {
         userService.deleteById(id);
     }
 
@@ -70,5 +72,20 @@ public class UserController {
     public void deleteFromFriends(@PathVariable long id,
                                   @PathVariable long friendId) {
         userService.deleteFromFriends(id, friendId);
+    }
+
+    public void throwIfNotValid(User user) {
+        log.debug("Start validation of user");
+
+        if (user.getLogin().contains(" ")) {
+            log.warn("Unsuccessful validation of user");
+            throw new ValidateException("Login should not contains a space");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.info("Process of changing empty name to email");
+            user.setName(user.getLogin());
+        }
+        log.info("Validation successful passed");
     }
 }

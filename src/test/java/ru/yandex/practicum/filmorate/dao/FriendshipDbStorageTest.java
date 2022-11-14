@@ -45,7 +45,7 @@ public class FriendshipDbStorageTest {
         userDbStorage.createUser(user2);
 
         Optional<Friendship> optionalFriendship =
-                Optional.of(friendshipDbStorage.createFriend(1L, 2L));
+                Optional.of(friendshipDbStorage.create(1L, 2L));
 
         assertThat(optionalFriendship)
                 .isPresent()

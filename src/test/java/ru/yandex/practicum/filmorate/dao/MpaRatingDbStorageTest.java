@@ -20,7 +20,7 @@ public class MpaRatingDbStorageTest {
 
     @Test
     public void getMpaTest() {
-        Optional<Mpa> optionalMpa = Optional.of(mpaRatingDbStorage.readMpaRatingById(1));
+        Optional<Mpa> optionalMpa = Optional.of(mpaRatingDbStorage.readById(1));
 
         assertThat(optionalMpa)
                 .isPresent()
