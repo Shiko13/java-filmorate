@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
@@ -50,7 +51,11 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public void delete(long userOneId, long userTwoId) {
         String sqlQuery = "delete from FRIENDSHIP where USER1_ID = ? and USER2_ID = ?";
-        jdbcTemplate.update(sqlQuery, userOneId, userTwoId);
+
+        int numRow = jdbcTemplate.update(sqlQuery, userOneId, userTwoId);
+        if (numRow == 0) {
+            throw new NotFoundException(String.format("User with id = %d or user with id = %d not found", userOneId, userTwoId));
+        }
     }
 
     @Override

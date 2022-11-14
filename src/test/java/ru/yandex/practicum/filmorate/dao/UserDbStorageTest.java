@@ -30,14 +30,14 @@ public class UserDbStorageTest {
 
         user.setName(user.getLogin());
 
-        Optional<User> optionalUser = Optional.of(userDbStorage.createUser(user));
+        Optional<User> optionalUser = Optional.of(userDbStorage.create(user));
 
         assertThat(optionalUser)
                 .isPresent()
                 .hasValueSatisfying(o ->
                         assertThat(o).hasFieldOrPropertyWithValue("email", "lisaann@ya.ru"));
 
-        Optional<User> optionalUserById = Optional.of(userDbStorage.findUserById(1L));
+        Optional<User> optionalUserById = Optional.of(userDbStorage.findById(1L));
 
         assertThat(optionalUserById)
                 .isPresent()
@@ -53,7 +53,7 @@ public class UserDbStorageTest {
         testUpdateUser.setName(testUpdateUser.getLogin());
         testUpdateUser.setId(1L);
 
-        Optional<User> testUserUpdateOptional = Optional.of(userDbStorage.updateUser(testUpdateUser));
+        Optional<User> testUserUpdateOptional = Optional.of(userDbStorage.update(testUpdateUser));
 
         assertThat(testUserUpdateOptional)
                 .isPresent()

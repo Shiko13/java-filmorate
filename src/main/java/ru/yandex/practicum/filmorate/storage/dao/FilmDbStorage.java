@@ -111,7 +111,7 @@ public class FilmDbStorage implements FilmStorage {
         int numRow = jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
         if (numRow == 0) {
-            throw new NotFoundException(String.format("Film with id = %d not found", film.getId()));
+            throw new NotFoundException("Film with those parameters not allow updated");
         }
         updateGenres(film);
     }

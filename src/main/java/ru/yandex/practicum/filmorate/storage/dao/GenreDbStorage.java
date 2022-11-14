@@ -49,8 +49,6 @@ public class GenreDbStorage implements GenreStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, ids.toArray());
 
         while (sqlRowSet.next()) {
-            System.out.println(sqlRowSet.getLong("film_id") + " " + sqlRowSet.getInt("genre_id") +  " " +
-                    sqlRowSet.getString("genre_name"));
             final Film film = filmById.get(sqlRowSet.getLong("film_id"));
             Genre genre = Genre.builder().
                         id(sqlRowSet.getInt("genre_id")).

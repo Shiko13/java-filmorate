@@ -36,7 +36,7 @@ public class LikeDbStorageTest {
                 .birthday(LocalDate.of(1972, 5, 9))
                 .build();
 
-        userDbStorage.createUser(user1);
+        userDbStorage.create(user1);
 
         User user2 = User.builder()
                 .id(2L)
@@ -46,7 +46,7 @@ public class LikeDbStorageTest {
                 .birthday(LocalDate.of(1949, 1, 10))
                 .build();
 
-        userDbStorage.createUser(user2);
+        userDbStorage.create(user2);
 
         Mpa mpa = Mpa.builder()
                 .id(1)

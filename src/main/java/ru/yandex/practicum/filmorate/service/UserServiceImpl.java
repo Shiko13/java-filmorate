@@ -26,14 +26,14 @@ public class UserServiceImpl implements UserService {
     public List<User> getAll() {
         log.debug("Start request GET to /users");
 
-        return userStorage.findAllUsers();
+        return userStorage.findAll();
     }
 
     @Override
     public User getById(long id) {
         log.debug("Start request GET to /users/{}", id);
 
-        return userStorage.findUserById(id);
+        return userStorage.findById(id);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request POST to /users, with id = {}, email = {}, login = {}, name = {}, birthday = {}",
                 user.getId(), user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
 
-        return userStorage.createUser(user);
+        return userStorage.create(user);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request PUT to /users, with id = {}, email = {}, login = {}, name = {}, birthday = {}",
                 user.getId(), user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
 
-        return userStorage.updateUser(user);
+        return userStorage.update(user);
     }
 
     @Override
@@ -81,14 +81,14 @@ public class UserServiceImpl implements UserService {
     public void deleteAll() {
         log.debug("Start request DELETE to /users)");
 
-        userStorage.deleteAllUsers();
+        userStorage.deleteAll();
     }
 
     @Override
     public void deleteById(long id) {
         log.debug("Start request DELETE to /users/{}", id);
 
-        userStorage.deleteUserById(id);
+        userStorage.deleteById(id);
     }
 
     @Override

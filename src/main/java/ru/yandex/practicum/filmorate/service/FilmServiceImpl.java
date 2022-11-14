@@ -90,7 +90,7 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Start request GET to /mpa/{}", mpaRatingId);
 
         if (mpaRatingId < 0) {
-            throw new NotFoundException("Mpa should be from 1 to 5");
+            throw new NotFoundException("Mpa should be positive");
         }
 
         return mpaRatingStorage.readById(mpaRatingId);
@@ -120,8 +120,6 @@ public class FilmServiceImpl implements FilmService {
     public void addLike(long filmId, long userId) {
         log.debug("Start request PUT to /films/{}/like/{}", filmId, userId);
 
-        validateId(filmId);
-        validateId(userId);
         likeStorage.create(filmId, userId);
     }
 
@@ -129,8 +127,6 @@ public class FilmServiceImpl implements FilmService {
     public void deleteLike(long filmId, long userId) {
         log.debug("Start request DELETE to /films/{}/like/{}", filmId, userId);
 
-        validateId(filmId);
-        validateId(userId);
         likeStorage.delete(filmId, userId);
     }
 

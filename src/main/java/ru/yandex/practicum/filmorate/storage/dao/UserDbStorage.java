@@ -24,20 +24,20 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         String sqlQuery = "select * from users";
 
-        Set<User> usersSet = jdbcTemplate.query(sqlQuery, UserDbStorage::mapRowToUserSet);
+        Set<User> usersSet = jdbcTemplate.query(sqlQuery, UserDbStorage::mapRowToSet);
         return new ArrayList<>(usersSet);
     }
 
     @Override
-    public User findUserById(long userId) {
+    public User findById(long userId) {
         String sqlQuery = "select * from users where user_id = ?";
 
         User user;
         try {
-            user = jdbcTemplate.queryForObject(sqlQuery, UserDbStorage::mapRowToUser, userId);
+            user = jdbcTemplate.queryForObject(sqlQuery, UserDbStorage::mapRow, userId);
         } catch (Exception e) {
             throw new NotFoundException(String.format("User with id = %d not found", userId));
         }
@@ -46,7 +46,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User createUser(User user) {
+    public User create(User user) {
         String sqlQuery = "insert into users (email, login, user_name, birthday) values (?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -64,30 +64,36 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) throws NotFoundException {
+    public User update(User user) throws NotFoundException {
         String sqlQuery = "update users set email = ?, login = ?, user_name = ?, birthday = ? where USER_ID = ?";
 
-        findUserById(user.getId());
+        findById(user.getId());
 
-        jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(),
+        int numRow = jdbcTemplate.update(sqlQuery, user.getEmail(), user.getLogin(), user.getName(),
                 user.getBirthday(), user.getId());
+        if (numRow == 0) {
+            throw new NotFoundException("User with those parameters not allow updated");
+        }
 
         return user;
     }
 
     @Override
-    public void deleteAllUsers() {
+    public void deleteAll() {
         String sqlQuery = "delete from users";
         jdbcTemplate.update(sqlQuery);
     }
 
     @Override
-    public void deleteUserById(long userId) {
+    public void deleteById(long userId) {
         String sqlQuery = "delete from users where user_id = ?";
-        jdbcTemplate.update(sqlQuery, userId);
+        int numRow = jdbcTemplate.update(sqlQuery, userId);
+        if (numRow == 0) {
+            throw new NotFoundException(String.format("Film with id = %d not found", userId));
+        }
     }
 
-    public static User mapRowToUser(ResultSet resultSet, long rowNum) {
+    public static User mapRow(ResultSet resultSet, long rowNum) {
         User user;
         try {
             user = User.builder().
@@ -103,11 +109,11 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    public static Set<User> mapRowToUserSet(ResultSet resultSet) throws SQLException {
+    public static Set<User> mapRowToSet(ResultSet resultSet) throws SQLException {
         Set<User> users = new HashSet<>();
 
         while (resultSet.next()) {
-            User user = mapRowToUser(resultSet, resultSet.getInt("user_id"));
+            User user = mapRow(resultSet, resultSet.getInt("user_id"));
             users.add(user);
         }
 
