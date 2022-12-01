@@ -1,62 +1,86 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-
+@Slf4j
+@Validated
 @RestController
 @RequestMapping("/films")
-@Slf4j
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmController {
 
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int id = 1;
     private final LocalDate BIRTHDAY_OF_CINEMATOGRAPHY = LocalDate.of(1895, 12, 28);
-
+    private final FilmService filmService;
     @GetMapping
-    public Collection<Film> findAllFilms() {
-        log.info("Получен запрос к эндпоинту /films, метод GET");
-        return films.values();
+    public Collection<Film> findAll() {
+        return filmService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Film findById(@PathVariable long id) {
+        return filmService.getById(id);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> showTopMostLiked(@Positive @RequestParam(defaultValue = "10") int count) {
+        return filmService.getTopMostLiked(count);
     }
 
     @PostMapping
-    public Film createFilm(@Valid @RequestBody Film film) {
-        log.info("Получен запрос к эндпоинту /films, метод POST");
-        if (!films.containsValue(film)) {
-            validationFilm(film);
-        } else {
-            throw new ValidateException("Этот фильм уже есть в фильморейтинге :)");
-        }
-        film.setId(id++);
-        log.info("Добавление нового фильма");
-        films.put(film.getId(), film);
-        return film;
+    public Film create(@Valid @RequestBody Film film) {
+        throwIfNotValidDate(film);
+
+        return filmService.create(film);
     }
 
     @PutMapping
-    public Film changeFilm(@Valid @RequestBody Film film) {
-        log.info("Получен запрос к эндпоинту /films, метод PUT");
-        if (!films.containsKey(film.getId())) {
-            throw new ValidateException("Фильм с id " + film.getId() + " не найден");
-        }
-        validationFilm(film);
-        log.info("Обновление фильма");
-        films.put(film.getId(), film);
-        return film;
+    public Film change(@Valid @RequestBody Film film) {
+        throwIfNotValidDate(film);
+
+        return filmService.update(film);
     }
 
-    public void validationFilm(Film film) {
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable long id,
+                        @PathVariable long userId) {
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long id,
+                           @PathVariable long userId) {
+        filmService.deleteLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable long id) {
+        filmService.deleteById(id);
+    }
+
+    @DeleteMapping
+    public void deleteAll() {
+        filmService.deleteAll();
+    }
+
+    public void throwIfNotValidDate(Film film) {
+        log.debug("Start validation of film");
+
         if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
-            throw new ValidateException("Братья Люмьер смотрят на вас с недоумением! (кажется, вы ошиблись с датой");
+            throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
         }
-        log.info("Валидация пройдена");
+
+        log.debug("Validation successful passed");
     }
 }
