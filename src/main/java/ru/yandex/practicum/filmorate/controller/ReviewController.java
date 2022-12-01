@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j
@@ -17,6 +17,7 @@ import java.util.List;
 @RequestMapping("/reviews")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ReviewController {
+    private final ReviewService reviewService;
 
     @PostMapping
     public Review create(@Valid @RequestBody Review review) {
