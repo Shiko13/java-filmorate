@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Validated
@@ -42,6 +43,12 @@ public class FilmController {
     public Collection<Film> getByDirector(@PathVariable long directorId,
                                           @RequestParam String sortBy) {
         return filmService.getSortListByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilmsByTitleByDirector(@RequestParam(required = false) String query,
+                                                  @RequestParam(required = false) String by) {
+        return filmService.searchFilmsByTitleByDirector(query, by);
     }
 
     @PostMapping
