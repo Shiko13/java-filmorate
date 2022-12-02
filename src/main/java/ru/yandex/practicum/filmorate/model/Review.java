@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import java.util.Objects;
 
-@Builder
+@Builder(toBuilder = true)
 @Getter
 public class Review {
     private final Integer id;

@@ -51,6 +51,11 @@ CREATE TABLE IF NOT EXISTS reviews(
     user_id BIGINT REFERENCES users (user_id) ON DELETE CASCADE,
     is_positive BOOLEAN,
     content VARCHAR,
-    useful BIGINT,
-    PRIMARY KEY (film_id, user_id)
+    useful BIGINT DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS reviews_likes (
+    review_id BIGINT REFERENCES reviews (review_id),
+    user_id BIGINT REFERENCES users (USER_ID),
+    PRIMARY KEY (user_id, review_id)
 );
