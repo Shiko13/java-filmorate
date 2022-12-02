@@ -27,6 +27,26 @@ public class DirectorDbStorage implements DirectorStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private static void addDirectorToFilm(Map<Long, Film> filmById, SqlRowSet sqlRowSet) {
+        while (sqlRowSet.next()) {
+            final Film film = filmById.get(sqlRowSet.getLong("film_id"));
+            Director director = Director.builder().
+                    id(sqlRowSet.getLong("director_id")).
+                    name(sqlRowSet.getString("director_name")).
+                    surname(sqlRowSet.getString("director_surname")).
+                    build();
+            film.getDirectors().add(director);
+        }
+    }
+
+    private static Director mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+        return Director.builder().
+                id(resultSet.getLong("director_id")).
+                name(resultSet.getString("director_name")).
+                surname(resultSet.getString("director_surname")).
+                build();
+    }
+
     @Override
     public List<Director> readAll() {
         String sqlQuery = "select * from DIRECTORS";
@@ -57,25 +77,10 @@ public class DirectorDbStorage implements DirectorStorage {
         List<Long> ids = new ArrayList<>(filmById.keySet());
 
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, ids.toArray());
+        addDirectorToFilm(filmById, sqlRowSet);
 
-        while (sqlRowSet.next()) {
-            final Film film = filmById.get(sqlRowSet.getLong("film_id"));
-            Director director = Director.builder().
-                    id(sqlRowSet.getLong("director_id")).
-                    name(sqlRowSet.getString("director_name")).
-                    surname(sqlRowSet.getString("director_surname")).
-                    build();
-            film.getDirectors().add(director);
-        }
         return films;
-    }
 
-    private static Director mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        return Director.builder().
-                id(resultSet.getLong("director_id")).
-                name(resultSet.getString("director_name")).
-                surname(resultSet.getString("director_surname")).
-                build();
     }
 
     @Override
@@ -94,7 +99,6 @@ public class DirectorDbStorage implements DirectorStorage {
         return director;
     }
 
-    //
     @Override
     public Director update(Director director) {
         String sqlQuery = "update directors set director_name = ?, director_surname = ? where director_id = ?";
