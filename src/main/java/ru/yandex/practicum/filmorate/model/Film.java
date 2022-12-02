@@ -26,5 +26,7 @@ public class Film {
     @NotNull
     private final Mpa mpa;
     @Builder.Default
+    private List<Director> directors = new ArrayList<>();
+    @Builder.Default
     private List<Genre> genres = new ArrayList<>();
 }
