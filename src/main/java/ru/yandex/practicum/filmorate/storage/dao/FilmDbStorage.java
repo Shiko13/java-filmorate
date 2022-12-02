@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -47,11 +48,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> findAll() {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
-                "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, g.GENRE_ID, g.GENRE_NAME\n" +
+                "mr.MPA_RATING_ID, mr.MPA_RATING_NAME\n" +
                 "from films as f\n" +
-                "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n" +
-                "join film_genres as fg on f.FILM_ID = fg.FILM_ID\n" +
-                "left outer join GENRES as g on fg.GENRE_ID = g.GENRE_ID\n";
+                "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n";
 
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
         Set<Film> films = mapRowToFilmSet(sqlRowSet);
@@ -63,7 +62,6 @@ public class FilmDbStorage implements FilmStorage {
     public Film create(Film film) {
         String sqlQuery = "insert into films(film_name, description, release_date, duration, MPA_RATING) " +
                 "values (?, ?, ?, ?, ?)";
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(con -> {
@@ -78,6 +76,7 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         createGenres(film);
+        createDirectors(film);
 
         return film;
     }
@@ -103,6 +102,27 @@ public class FilmDbStorage implements FilmStorage {
         createGenres(film);
     }
 
+    private void createDirectors(Film film) {
+        if (film.getDirectors() == null) {
+            return;
+        }
+
+        List<Director> directors = film.getDirectors().stream()
+                .distinct()
+                .collect(Collectors.toList());
+        for (Director director : directors) {
+            String sqlQueryGenre = "insert into film_directors values (?, ?)";
+            jdbcTemplate.update(sqlQueryGenre, film.getId(), director.getId());
+        }
+        film.setDirectors(directors);
+    }
+
+    private void updateDirectors(Film film) {
+        String sqlQuery = "delete from film_directors where film_id = ?";
+        jdbcTemplate.update(sqlQuery, film.getId());
+        createDirectors(film);
+    }
+
     @Override
     public void update(Film film) {
         String sqlQuery = "update films set film_name = ?, description = ?, release_date = ?, duration = ?, " +
@@ -113,7 +133,9 @@ public class FilmDbStorage implements FilmStorage {
         if (numRow == 0) {
             throw new NotFoundException("Film with those parameters not allow updated");
         }
+
         updateGenres(film);
+        updateDirectors(film);
     }
 
     @Override
@@ -144,9 +166,53 @@ public class FilmDbStorage implements FilmStorage {
                 "limit " + count;
 
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
-        Set<Film> popularFilms = mapRowToFilmSet(sqlRowSet);
+        return mapRowToFilmSet(sqlRowSet);
+    }
 
-        return popularFilms;
+    @Override
+    public List<Film> getSortByYearFromDirector(long directorId) {
+        String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
+                    "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, fd.DIRECTOR_ID\n" +
+                    "from films as f\n" +
+                    "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n" +
+                    "join FILM_DIRECTORS as fd on f.FILM_ID = fd.FILM_ID\n" +
+                    "where fd.director_id = ?" +
+                    "order by f.RELEASE_DATE";
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, directorId);
+        validateDirectorId(directorId, sqlRowSet);
+
+        Set<Film> films = mapRowToFilmSet(sqlRowSet);
+        return new ArrayList<>(films);
+    }
+
+    @Override
+    public List<Film> getSortByLikesFromDirector(long directorId) {
+        String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
+                "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, fd.DIRECTOR_ID, " +
+                "count(l.USER_ID)\n" +
+                "from films as f\n" +
+                "left join LIKES as l on f.FILM_ID = l.FILM_ID\n" +
+                "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n" +
+                "join FILM_DIRECTORS as fd on f.FILM_ID = fd.FILM_ID\n" +
+                "where fd.director_id = ?" +
+                "group by f.FILM_ID " +
+                "order by count(l.USER_ID)";
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, directorId);
+        validateDirectorId(directorId, sqlRowSet);
+
+        Set<Film> films = mapRowToFilmSet(sqlRowSet);
+        return new ArrayList<>(films);
+    }
+
+    private static void validateDirectorId(long directorId, SqlRowSet sqlRowSet) {
+        sqlRowSet.last();
+        int resultCount = sqlRowSet.getRow();
+        if (resultCount == 0) {
+            throw new NotFoundException(String.format("Director with id = %d not found", directorId));
+        }
+        sqlRowSet.beforeFirst();
     }
 
     private static Film mapRowToFilm(SqlRowSet sqlRowSet) {
