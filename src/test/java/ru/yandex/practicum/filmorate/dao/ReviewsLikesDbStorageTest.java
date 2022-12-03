@@ -6,16 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.ReviewsLikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,10 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class ReviewDbStorageTest {
+class ReviewsLikesDbStorageTest {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final ReviewService reviewService;
+
+    private final ReviewsLikeStorage reviewsLikeStorage;
 
     @BeforeEach
     public void fillTables() {
@@ -53,10 +54,7 @@ public class ReviewDbStorageTest {
                 .mpa(mpa)
                 .build();
         filmStorage.create(film);
-    }
 
-    @Test
-    public void fieldsReviewCorrect() {
         Review review = Review.builder()
                 .id(1L)
                 .userId(1)
@@ -64,57 +62,45 @@ public class ReviewDbStorageTest {
                 .isPositive(true)
                 .content("AAA")
                 .build();
+        reviewStorage.create(review);
+    }
 
-        Optional<Review> optionalReview = Optional.of(reviewStorage.create(review));
+    @Test
+    public void ReviewsLikesCorrect() {
+        reviewService.addLike(1, 1);
+
+        Optional<Review> optionalReview = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview)
                 .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
-                        .hasFieldOrPropertyWithValue("userId", 1L)
-                        .hasFieldOrPropertyWithValue("filmId", 1L)
-                        .hasFieldOrPropertyWithValue("isPositive", true)
-                        .hasFieldOrPropertyWithValue("id", 1L)
-                        .hasFieldOrPropertyWithValue("useful", 0L)
-                        .hasFieldOrPropertyWithValue("content", "AAA"));
+                        .hasFieldOrPropertyWithValue("useful", 1L));
 
+        Optional<Like> optionalLike = Optional.of(reviewsLikeStorage.getLikeById(1, 1));
+        assertThat(optionalLike)
+                .isPresent()
+                .hasValueSatisfying(o -> assertThat(o)
+                        .hasFieldOrPropertyWithValue("entityId", 1L)
+                        .hasFieldOrPropertyWithValue("userId", 1L));
+
+        reviewService.removeLike(1,1);
         Optional<Review> optionalReview1 = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview1)
                 .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
-                        .hasFieldOrPropertyWithValue("userId", 1L)
-                        .hasFieldOrPropertyWithValue("filmId", 1L)
-                        .hasFieldOrPropertyWithValue("isPositive", true)
-                        .hasFieldOrPropertyWithValue("id", 1L)
-                        .hasFieldOrPropertyWithValue("useful", 0L)
-                        .hasFieldOrPropertyWithValue("content", "AAA"));
+                        .hasFieldOrPropertyWithValue("useful", 0L));
 
-        Review review1 = Review.builder()
-                .id(2L)
-                .userId(1)
-                .filmId(1)
-                .isPositive(true)
-                .content("CCC")
-                .build();
-        reviewStorage.create(review1);
-
-        List<Review> reviews = reviewStorage.getAll(10);
-        assertThat(reviews)
-                .hasSize(2)
-                .hasSameElementsAs(List.of(review, review1));
-
-        List<Review> reviews1 = reviewStorage.getAllByFilmID(1, 10);
-        assertThat(reviews1)
-                .hasSize(2)
-                .hasSameElementsAs(List.of(review, review1));
-
-        reviewStorage.remove(2);
-        List<Review> reviews2 = reviewStorage.getAll(10);
-        assertThat(reviews2)
-                .hasSize(1);
-
-        review = review.toBuilder().content("BBB").build();
-        Optional<Review> optionalReview2 = Optional.of(reviewStorage.update(review));
+        reviewService.addDislike(1, 1);
+        Optional<Review> optionalReview2 = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview2)
+                .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
-                        .hasFieldOrPropertyWithValue("content", "BBB"));
+                        .hasFieldOrPropertyWithValue("useful", -1L));
+
+        reviewService.removeDislike(1,1);
+        Optional<Review> optionalReview3 = Optional.of(reviewStorage.getByID(1));
+        assertThat(optionalReview3)
+                .isPresent()
+                .hasValueSatisfying(o -> assertThat(o)
+                        .hasFieldOrPropertyWithValue("useful", 0L));
     }
 }

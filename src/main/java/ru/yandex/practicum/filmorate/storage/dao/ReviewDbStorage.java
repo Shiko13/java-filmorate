@@ -26,8 +26,6 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review create(Review review) {
-        /*String sqlQuery = "INSERT INTO reviews (film_id, user_id, is_positive, content) " +
-                "VALUES (?, ?, ?, ?) ON CONFLICT (film_id, user_id) DO NOTHING";*/
         String sqlQuery = "INSERT INTO reviews (film_id, user_id, is_positive, content) " +
                 "VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -117,6 +115,27 @@ public class ReviewDbStorage implements ReviewStorage {
 
         reviews = sortReviews(reviews);
         return reviews;
+    }
+
+    @Override
+    public void increaseRating(long reviewID) {
+        String sqlQuery = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
+        realiseRatingQuery(sqlQuery, reviewID);
+        log.debug("увеличен рейтинг отзывова id = {}", reviewID);
+    }
+
+    @Override
+    public void reduceRating(long reviewID) {
+        String sqlQuery = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
+        realiseRatingQuery(sqlQuery, reviewID);
+        log.debug("уменьшин рейтинг отзывова id = {}", reviewID);
+    }
+
+    private void realiseRatingQuery(String sqlQuery, long reviewID) {
+        int updatedReviewId = jdbcTemplate.update(sqlQuery, reviewID);
+        if (updatedReviewId == 0) {
+            throw new NotFoundException(String.format("Ревью c ID № %s не существует", reviewID));
+        }
     }
 
     private List<Review> sortReviews(List<Review> reviews) {

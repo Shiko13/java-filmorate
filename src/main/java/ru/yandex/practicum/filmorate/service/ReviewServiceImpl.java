@@ -25,8 +25,9 @@ public class ReviewServiceImpl implements ReviewService{
 
     @Override
     public Review create(Review review) {
-        userStorage.findById(review.getUserId()); // todo отрефакторить запрос
-        filmStorage.findById(review.getFilmId()); // todo отрефакторить запрос
+        userStorage.findById(review.getUserId());
+        filmStorage.findById(review.getFilmId());
+
         review = reviewStorage.create(review);
         log.debug("Добавлен отзыв к фильму id = {}", review.getFilmId());
         return review;
@@ -78,8 +79,8 @@ public class ReviewServiceImpl implements ReviewService{
 
         boolean isSuccess = reviewsLikeStorage.addLike(reviewID, userID);
         if (isSuccess) {
+            reviewStorage.increaseRating(reviewID);
             log.debug("Добавлен лайк отзывову id = {}", reviewID);
-            increaseRating(reviewID);
         }
     }
 
@@ -97,7 +98,7 @@ public class ReviewServiceImpl implements ReviewService{
         boolean isSuccess = reviewsLikeStorage.addDislike(reviewID, userID);
         if (isSuccess) {
             log.debug("Добавлен дизлайк отзывову id = {}", reviewID);
-            reduceRating(reviewID);
+            reviewStorage.reduceRating(reviewID);
         }
     }
 
@@ -115,13 +116,13 @@ public class ReviewServiceImpl implements ReviewService{
         boolean isSuccess = reviewsLikeStorage.removeLike(reviewID, userID);
         if (isSuccess) {
             log.debug("Удален лайк отзывову id = {}", reviewID);
-            reduceRating(reviewID);
+            reviewStorage.reduceRating(reviewID);
         }
     }
 
     @Override
     public void removeDislike(long reviewID, long userID) {
-        Like like = reviewsLikeStorage.getLikeById(reviewID, userID);
+        Like like = reviewsLikeStorage.getDislikeById(reviewID, userID);
         if (like == null) {
             throw new CreationFailException(
                     String.format(
@@ -132,22 +133,8 @@ public class ReviewServiceImpl implements ReviewService{
 
         boolean isSuccess = reviewsLikeStorage.removeDislike(reviewID, userID);
         if (isSuccess) {
+            reviewStorage.increaseRating(reviewID);
             log.debug("Удален дизлайк отзывову id = {}", reviewID);
-            increaseRating(reviewID);
         }
-    }
-
-    private void increaseRating(long reviewID) {
-        Review review = getByID(reviewID);
-        review = review.toBuilder().useful(review.getUseful() + 1).build();
-        update(review);
-        log.debug("увеличен рейтинг отзывова id = {}", reviewID);
-    }
-
-    private void reduceRating(long reviewID) {
-        Review review = getByID(reviewID);
-        review = review.toBuilder().useful(review.getUseful() - 1).build();
-        update(review);
-        log.debug("уменьшин рейтинг отзывова id = {}", reviewID);
     }
 }
