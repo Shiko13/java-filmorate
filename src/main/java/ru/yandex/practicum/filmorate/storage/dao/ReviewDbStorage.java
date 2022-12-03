@@ -9,14 +9,16 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.CreationFailException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.dao.mappers.LikeMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mappers.ReviewMapper;
 
 import java.sql.PreparedStatement;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -26,22 +28,20 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review create(Review review) {
+        /*String sqlQuery = "INSERT INTO reviews (film_id, user_id, is_positive, content) " +
+                "VALUES (?, ?, ?, ?) ON CONFLICT (film_id, user_id) DO NOTHING";*/
         String sqlQuery = "INSERT INTO reviews (film_id, user_id, is_positive, content) " +
                 "VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        try {
-            jdbcTemplate.update(con -> {
-                PreparedStatement stmt = con.prepareStatement(sqlQuery, new String[]{"review_id"});
-                stmt.setLong(1, review.getFilmId());
-                stmt.setLong(2, review.getUserId());
-                stmt.setBoolean(3, review.isPositive());
-                stmt.setString(4, review.getContent());
-                return stmt;
-            }, keyHolder);
-        } catch (Exception e) {
-            throw new NotFoundException(String.format("Пользователь c ID № %s или фильм c ID № %s не существует", review.getUserId(), review.getFilmId()));
-        }
+        jdbcTemplate.update(con -> {
+            PreparedStatement stmt = con.prepareStatement(sqlQuery, new String[]{"review_id"});
+            stmt.setLong(1, review.getFilmId());
+            stmt.setLong(2, review.getUserId());
+            stmt.setBoolean(3, review.isPositive());
+            stmt.setString(4, review.getContent());
+            return stmt;
+        }, keyHolder);
         if (keyHolder.getKey() == null) throw new CreationFailException("Не удалось создать отзыв");
 
         return review.toBuilder().id(keyHolder.getKey().longValue()).build();
@@ -96,22 +96,42 @@ public class ReviewDbStorage implements ReviewStorage {
     public List<Review> getAllByFilmID(long filmID, int count) {
         String sqlQuery = "SELECT * FROM reviews WHERE film_id = ? LIMIT ?";
 
-        return jdbcTemplate.query(con -> {
+        List<Review> reviews = jdbcTemplate.query(con -> {
             PreparedStatement stmt = con.prepareStatement(sqlQuery, new String[]{"review_id"});
             stmt.setLong(1, filmID);
             stmt.setInt(2, count);
             return stmt;
         }, new ReviewMapper());
+
+        reviews = sortReviews(reviews);
+        return reviews;
     }
 
     @Override
     public List<Review> getAll(int count) {
         String sqlQuery = "SELECT * FROM reviews LIMIT ?";
 
-        return jdbcTemplate.query(con -> {
+        List<Review> reviews = jdbcTemplate.query(con -> {
             PreparedStatement stmt = con.prepareStatement(sqlQuery, new String[]{"review_id"});
             stmt.setInt(1, count);
             return stmt;
         }, new ReviewMapper());
+
+        reviews = sortReviews(reviews);
+        return reviews;
+    }
+
+    private List<Review> sortReviews(List<Review> reviews) {
+        List<Review> positiveUseful = reviews.stream()
+                .filter(o -> o.getUseful() >= 0)
+                .sorted((o1, o2) -> (int) (o2.getUseful() - o1.getUseful()))
+                .collect(Collectors.toList());
+
+        List<Review> negativeUseful = reviews.stream()
+                .filter(o -> o.getUseful() < 0)
+                .sorted((o1, o2) -> (int) (o2.getUseful() - o1.getUseful()))
+                .collect(Collectors.toList());
+
+        return Stream.concat(positiveUseful.stream(), negativeUseful.stream()).collect(Collectors.toList());
     }
 }

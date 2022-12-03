@@ -76,8 +76,11 @@ public class ReviewServiceImpl implements ReviewService{
             );
         }
 
-        reviewsLikeStorage.addLike(reviewID, userID);
-        log.debug("Добавлен лайк отзывову id = {}", reviewID);
+        boolean isSuccess = reviewsLikeStorage.addLike(reviewID, userID);
+        if (isSuccess) {
+            log.debug("Добавлен лайк отзывову id = {}", reviewID);
+            increaseRating(reviewID);
+        }
     }
 
     @Override
@@ -91,8 +94,11 @@ public class ReviewServiceImpl implements ReviewService{
             );
         }
 
-        reviewsLikeStorage.addDislike(reviewID, userID);
-        log.debug("Добавлен дизлайк отзывову id = {}", reviewID);
+        boolean isSuccess = reviewsLikeStorage.addDislike(reviewID, userID);
+        if (isSuccess) {
+            log.debug("Добавлен дизлайк отзывову id = {}", reviewID);
+            reduceRating(reviewID);
+        }
     }
 
     @Override
@@ -106,8 +112,11 @@ public class ReviewServiceImpl implements ReviewService{
             );
         }
 
-        reviewsLikeStorage.removeLike(reviewID, userID);
-        log.debug("Удален лайк отзывову id = {}", reviewID);
+        boolean isSuccess = reviewsLikeStorage.removeLike(reviewID, userID);
+        if (isSuccess) {
+            log.debug("Удален лайк отзывову id = {}", reviewID);
+            reduceRating(reviewID);
+        }
     }
 
     @Override
@@ -121,7 +130,24 @@ public class ReviewServiceImpl implements ReviewService{
             );
         }
 
-        reviewsLikeStorage.removeDislike(reviewID, userID);
-        log.debug("Удален дизлайк отзывову id = {}", reviewID);
+        boolean isSuccess = reviewsLikeStorage.removeDislike(reviewID, userID);
+        if (isSuccess) {
+            log.debug("Удален дизлайк отзывову id = {}", reviewID);
+            increaseRating(reviewID);
+        }
+    }
+
+    private void increaseRating(long reviewID) {
+        Review review = getByID(reviewID);
+        review = review.toBuilder().useful(review.getUseful() + 1).build();
+        update(review);
+        log.debug("увеличен рейтинг отзывова id = {}", reviewID);
+    }
+
+    private void reduceRating(long reviewID) {
+        Review review = getByID(reviewID);
+        review = review.toBuilder().useful(review.getUseful() - 1).build();
+        update(review);
+        log.debug("уменьшин рейтинг отзывова id = {}", reviewID);
     }
 }

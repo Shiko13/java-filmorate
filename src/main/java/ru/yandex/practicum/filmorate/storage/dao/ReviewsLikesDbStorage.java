@@ -18,32 +18,35 @@ public class ReviewsLikesDbStorage implements ReviewsLikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addLike(long reviewID, long userID) {
+    public boolean addLike(long reviewID, long userID) {
         String sqlQuery = "INSERT INTO reviews_likes VALUES (?, ?)";
         realiseUpdateQuery(sqlQuery, reviewID, userID);
-        log.info("добавлен лайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        log.debug("добавлен лайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        return true;
     }
 
     @Override
-    public void addDislike(long reviewID, long userID) {
+    public boolean addDislike(long reviewID, long userID) {
         String sqlQuery = "INSERT INTO reviews_dislikes VALUES (?, ?)";
         realiseUpdateQuery(sqlQuery, reviewID, userID);
-        log.info("добавлен дизлайк пользователя с ID №{} отзыву №{}", userID, reviewID);
-
+        log.debug("добавлен дизлайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        return true;
     }
 
     @Override
-    public void removeLike(long reviewID, long userID) {
+    public boolean removeLike(long reviewID, long userID) {
         String sqlQuery = "DELETE FROM reviews_likes WHERE review_id = ? AND user_id = ?";
         realiseUpdateQuery(sqlQuery, reviewID, userID);
-        log.info("удален лайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        log.debug("удален лайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        return true;
     }
 
     @Override
-    public void removeDislike(long reviewID, long userID) {
+    public boolean removeDislike(long reviewID, long userID) {
         String sqlQuery = "DELETE FROM reviews_dislikes WHERE review_id = ? AND user_id = ?";
         realiseUpdateQuery(sqlQuery, reviewID, userID);
-        log.info("удален дизлайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        log.debug("удален дизлайк пользователя с ID №{} отзыву №{}", userID, reviewID);
+        return true;
     }
 
     @Override
