@@ -55,14 +55,14 @@ class ReviewsLikesDbStorageTest {
                 .build();
         filmStorage.create(film);
 
-        Review review = Review.builder()
+        /*Review review = Review.builder()
                 .id(1L)
                 .userId(1)
                 .filmId(1)
                 .isPositive(true)
                 .content("AAA")
                 .build();
-        reviewStorage.create(review);
+        reviewStorage.create(review);*/
 
         reviewService.addLike(1, 1);
 
