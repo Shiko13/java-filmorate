@@ -26,7 +26,7 @@ public class ReviewController {
         if (review.getFilmId() == 0 || review.getUserId() == 0) {
             throw new ValidationException("Поля filmId и userId должны быть заполнены");
         }
-        if (review.getIsPositive() == null) throw new ValidationException("Поля isPositive должно быть заполнено");
+        if (review.getIsPositive() == null) throw new ValidationException("Поле isPositive должно быть заполнено");
         return reviewService.create(review);
     }
 
