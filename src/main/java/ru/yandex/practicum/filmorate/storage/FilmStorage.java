@@ -13,4 +13,7 @@ public interface FilmStorage {
     void deleteById(long id);
     void deleteAll();
     Set<Film> readTopMostLiked(int count);
+    List<Film> getSortByYearFromDirector(long directorId);
+    List<Film> getSortByLikesFromDirector(long directorId);
+
 }

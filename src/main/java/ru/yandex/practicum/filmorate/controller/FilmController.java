@@ -38,6 +38,12 @@ public class FilmController {
         return filmService.getTopMostLiked(count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getByDirector(@PathVariable long directorId,
+                                          @RequestParam String sortBy) {
+        return filmService.getSortListByDirector(directorId, sortBy);
+    }
+
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         throwIfNotValidDate(film);

@@ -15,4 +15,5 @@ public interface FilmService extends Crud<Film> {
     Genre getGenreById(long genre_id);
     List<Mpa> getMpaRatings();
     Mpa getMpaRatingById(int mpaRatingId);
+    List<Film> getSortListByDirector(long directorId, String sortBy);
 }
