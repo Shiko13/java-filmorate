@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -26,9 +27,13 @@ class ReviewsLikesDbStorageTest {
     private final FilmStorage filmStorage;
     private final ReviewService reviewService;
     private final ReviewsLikeStorage reviewsLikeStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Test
     public void ReviewsLikesCorrect() {
+        String sqlQuery = "DELETE FROM reviews";
+        jdbcTemplate.update(sqlQuery);
+
         User user = User.builder()
                 .id(1L)
                 .email("lisaann@ya.ru")
@@ -97,5 +102,7 @@ class ReviewsLikesDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
                         .hasFieldOrPropertyWithValue("useful", 0L));
+
+
     }
 }

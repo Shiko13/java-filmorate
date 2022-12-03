@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -26,9 +27,13 @@ public class ReviewDbStorageTest {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     @Test
     public void fieldsReviewCorrect() {
+        String sqlQuery = "DELETE FROM reviews";
+        jdbcTemplate.update(sqlQuery);
+
         User user = User.builder()
                 .id(1L)
                 .email("lisaann@ya.ru")
