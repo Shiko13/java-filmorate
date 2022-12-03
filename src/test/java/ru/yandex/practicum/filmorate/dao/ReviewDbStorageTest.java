@@ -72,7 +72,6 @@ public class ReviewDbStorageTest {
                         .hasFieldOrPropertyWithValue("userId", 1L)
                         .hasFieldOrPropertyWithValue("filmId", 1L)
                         .hasFieldOrPropertyWithValue("isPositive", true)
-                        .hasFieldOrPropertyWithValue("id", 1L)
                         .hasFieldOrPropertyWithValue("useful", 0L)
                         .hasFieldOrPropertyWithValue("content", "AAA"));
 
