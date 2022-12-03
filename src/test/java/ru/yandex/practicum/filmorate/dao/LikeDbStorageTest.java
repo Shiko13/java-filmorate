@@ -68,7 +68,7 @@ public class LikeDbStorageTest {
         assertThat(optionalLike)
                 .isPresent()
                 .hasValueSatisfying(like ->
-                        assertThat(like).hasFieldOrPropertyWithValue("filmId", 1L)
+                        assertThat(like).hasFieldOrPropertyWithValue("entityId", 1L)
                                 .hasFieldOrPropertyWithValue("userId", 2L)
                 );
     }

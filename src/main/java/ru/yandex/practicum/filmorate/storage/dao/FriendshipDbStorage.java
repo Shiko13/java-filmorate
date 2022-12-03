@@ -41,7 +41,14 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public Friendship create(long userOneId, long userTwoId) {
         String sqlQuery = "insert into friendship values (?, ?)";
-        jdbcTemplate.update(sqlQuery, userOneId, userTwoId);
+        try {
+            jdbcTemplate.update(sqlQuery, userOneId, userTwoId);
+        } catch (Exception e) {
+            throw new NotFoundException(
+                    String.format("Пользователь c ID № %s или %s не существует", userOneId, userTwoId)
+            );
+        }
+
         return Friendship.builder().
                 userOneId(userOneId).
                 userTwoId(userTwoId).

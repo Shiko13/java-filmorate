@@ -25,7 +25,7 @@ public class LikeDbStorage implements LikeStorage {
         }
 
         return Like.builder().
-                filmId(filmId).
+                entityId(filmId).
                 userId(userId).
                 build();
 
