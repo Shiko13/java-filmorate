@@ -1,45 +1,60 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Getter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
+import javax.validation.constraints.*;
 import java.util.Objects;
 
 @Builder(toBuilder = true)
 @Getter
 public class Review {
-    private final Integer id;
-    @Positive
-    private final Integer filmID; // Фильм
-    @Positive
-    private final Integer userID; // Пользователь
-    private final boolean isPositive; // Тип отзыва позитивный - true или негативный - false
+    @JsonSetter("reviewId")
+    private final Long id;
+    @NotNull
+    private final long filmId; // Фильм
+    @NotNull
+    private final long userId; // Пользователь
+    private final Boolean isPositive; // Тип отзыва позитивный - true или негативный - false
     @NotBlank
     private final String content; // содержание отзыва
     @Builder.Default
     private final long useful = 0; // рейтинг полезности
+
+    @JsonGetter("reviewId")
+    public Long getId() {
+        return id;
+    }
+
+    @JsonGetter("isPositive")
+    public boolean isPositive() {
+        return isPositive;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Review review = (Review) o;
-        return isPositive == review.isPositive && useful == review.useful && Objects.equals(id, review.id) && Objects.equals(filmID, review.filmID) && Objects.equals(userID, review.userID) && Objects.equals(content, review.content);
+        return isPositive == review.isPositive && useful == review.useful
+                && Objects.equals(id, review.id) && Objects.equals(filmId, review.filmId)
+                && Objects.equals(userId, review.userId) && Objects.equals(content, review.content);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, filmID, userID, isPositive, content, useful);
+        return Objects.hash(id, filmId, userId, isPositive, content, useful);
     }
 
     @Override
     public String toString() {
         return "Review{" +
                 "id=" + id +
-                ", filmID=" + filmID +
-                ", userID=" + userID +
+                ", filmID=" + filmId +
+                ", userId=" + userId +
                 ", isPositive=" + isPositive +
                 ", content='" + content + '\'' +
                 ", useful=" + useful +

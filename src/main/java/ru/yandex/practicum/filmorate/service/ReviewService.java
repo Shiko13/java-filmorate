@@ -13,7 +13,7 @@ public interface ReviewService {
 
     Review getByID(long reviewID);
 
-    List<Review> getAllByFilmID(Integer filmID, int count);
+    List<Review> getAllByFilmID(Long filmID, int count);
 
     void addLike(long reviewID, long userID);
 

@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -22,6 +23,10 @@ public class ReviewController {
 
     @PostMapping
     public Review create(@Valid @RequestBody Review review) {
+        if (review.getFilmId() == 0 || review.getUserId() == 0) {
+            throw new ValidationException("Поля filmId и userId должны быть заполнены");
+        }
+        if (review.getIsPositive() == null) throw new ValidationException("Поля isPositive должно быть заполнено");
         return reviewService.create(review);
     }
 
@@ -41,9 +46,9 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review> getAllByFilmID(@RequestParam (defaultValue = "null") Integer filmID,
+    public List<Review> getAllByFilmID(@RequestParam (defaultValue = "-1") Long filmId,
                                        @RequestParam (defaultValue = "10") @Positive int count) {
-        return reviewService.getAllByFilmID(filmID, count);
+        return reviewService.getAllByFilmID(filmId, count);
     }
 
     @PutMapping(path = "/{id}/like/{userId}")

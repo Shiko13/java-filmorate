@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -34,7 +35,12 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public Genre readById(long genreId) {
         String sqlQuery = "select * from genres where genre_id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, GenreDbStorage::mapRow, genreId);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, GenreDbStorage::mapRow, genreId);
+        } catch (Exception e) {
+            throw new NotFoundException(String.format("Жанр c ID № %s не существует", genreId));
+        }
+
     }
 
     @Override
