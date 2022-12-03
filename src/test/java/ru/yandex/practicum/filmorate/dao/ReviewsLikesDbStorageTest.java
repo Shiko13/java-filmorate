@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -26,11 +25,10 @@ class ReviewsLikesDbStorageTest {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
     private final ReviewService reviewService;
-
     private final ReviewsLikeStorage reviewsLikeStorage;
 
-    @BeforeEach
-    public void fillTables() {
+    @Test
+    public void ReviewsLikesCorrect() {
         User user = User.builder()
                 .id(1L)
                 .email("lisaann@ya.ru")
@@ -63,10 +61,7 @@ class ReviewsLikesDbStorageTest {
                 .content("AAA")
                 .build();
         reviewStorage.create(review);
-    }
 
-    @Test
-    public void ReviewsLikesCorrect() {
         reviewService.addLike(1, 1);
 
         Optional<Review> optionalReview = Optional.of(reviewStorage.getByID(1));
