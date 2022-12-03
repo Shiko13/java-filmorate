@@ -31,9 +31,6 @@ class ReviewsLikesDbStorageTest {
 
     @Test
     public void ReviewsLikesCorrect() {
-        String sqlQuery = "DELETE FROM reviews";
-        jdbcTemplate.update(sqlQuery);
-
         User user = User.builder()
                 .id(1L)
                 .email("lisaann@ya.ru")
