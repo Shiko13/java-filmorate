@@ -10,15 +10,15 @@ public interface ReviewStorage {
 
     Review update(Review review);
 
-    void remove(long reviewID);
+    void remove(long reviewId);
 
-    Review getByID(long reviewID);
+    Review getByID(long reviewId);
 
-    List<Review> getAllByFilmID(long filmID, int count);
+    List<Review> getAllByFilmID(long filmId, int count);
 
     List<Review> getAll(int count);
 
-    void increaseRating(long reviewID);
+    void increaseRating(long reviewId);
 
-    void reduceRating(long reviewID);
+    void reduceRating(long reviewId);
 }

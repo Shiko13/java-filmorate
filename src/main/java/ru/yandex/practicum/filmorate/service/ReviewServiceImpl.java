@@ -41,100 +41,100 @@ public class ReviewServiceImpl implements ReviewService{
     }
 
     @Override
-    public void remove(long reviewID) {
-        reviewStorage.remove(reviewID);
-        log.debug("Удален отзыв id = {}", reviewID);
+    public void remove(long reviewId) {
+        reviewStorage.remove(reviewId);
+        log.debug("Удален отзыв id = {}", reviewId);
     }
 
     @Override
-    public Review getByID(long reviewID) {
-        Review review = reviewStorage.getByID(reviewID);
+    public Review getByID(long reviewId) {
+        Review review = reviewStorage.getByID(reviewId);
         log.debug("Отредактирован отзыв к фильму id = {}", review.getFilmId());
         return review;
     }
 
     @Override
-    public List<Review> getAllByFilmID(Long filmID, int count) {
+    public List<Review> getAllByFilmID(Long filmId, int count) {
         List<Review> reviews;
-        if (filmID < 0) {
+        if (filmId < 0) {
             reviews = reviewStorage.getAll(count);
             log.debug("Возвращен список всех отзывов");
         } else {
-            reviews = reviewStorage.getAllByFilmID(filmID, count);
-            log.debug("Возвращен список отзывов к фильму id = {}", filmID);
+            reviews = reviewStorage.getAllByFilmID(filmId, count);
+            log.debug("Возвращен список отзывов к фильму id = {}", filmId);
         }
         return reviews;
     }
 
     @Override
-    public void addLike(long reviewID, long userID) {
-        Like like = reviewsLikeStorage.getLikeById(reviewID, userID);
+    public void addLike(long reviewId, long userId) {
+        Like like = reviewsLikeStorage.getLikeById(reviewId, userId);
         if (like != null) {
             throw new CreationFailException(
                     String.format(
                             "Невозможно поставить лайк, т.к. пользователь ID №%s уже поставил лайк отзыву ID №%s",
-                            userID, reviewID)
+                            userId, reviewId)
             );
         }
 
-        boolean isSuccess = reviewsLikeStorage.addLike(reviewID, userID);
+        boolean isSuccess = reviewsLikeStorage.addLike(reviewId, userId);
         if (isSuccess) {
-            reviewStorage.increaseRating(reviewID);
-            log.debug("Добавлен лайк отзывову id = {}", reviewID);
+            reviewStorage.increaseRating(reviewId);
+            log.debug("Добавлен лайк отзывову id = {}", reviewId);
         }
     }
 
     @Override
-    public void addDislike(long reviewID, long userID) {
-        Like like = reviewsLikeStorage.getDislikeById(reviewID, userID);
+    public void addDislike(long reviewId, long userId) {
+        Like like = reviewsLikeStorage.getDislikeById(reviewId, userId);
         if (like != null) {
             throw new CreationFailException(
                     String.format(
                             "Невозможно поставить дизлайк, т.к. пользователь ID №%s уже поставил лайк отзыву ID №%s",
-                            userID, reviewID)
+                            userId, reviewId)
             );
         }
 
-        boolean isSuccess = reviewsLikeStorage.addDislike(reviewID, userID);
+        boolean isSuccess = reviewsLikeStorage.addDislike(reviewId, userId);
         if (isSuccess) {
-            log.debug("Добавлен дизлайк отзывову id = {}", reviewID);
-            reviewStorage.reduceRating(reviewID);
+            log.debug("Добавлен дизлайк отзывову id = {}", reviewId);
+            reviewStorage.reduceRating(reviewId);
         }
     }
 
     @Override
-    public void removeLike(long reviewID, long userID) {
-        Like like = reviewsLikeStorage.getLikeById(reviewID, userID);
+    public void removeLike(long reviewId, long userId) {
+        Like like = reviewsLikeStorage.getLikeById(reviewId, userId);
         if (like == null) {
             throw new CreationFailException(
                     String.format(
                             "Невозможно удалить лайк, т.к. пользователь ID №%s не ставил лайк отзыву ID №%s",
-                            userID, reviewID)
+                            userId, reviewId)
             );
         }
 
-        boolean isSuccess = reviewsLikeStorage.removeLike(reviewID, userID);
+        boolean isSuccess = reviewsLikeStorage.removeLike(reviewId, userId);
         if (isSuccess) {
-            log.debug("Удален лайк отзывову id = {}", reviewID);
-            reviewStorage.reduceRating(reviewID);
+            log.debug("Удален лайк отзывову id = {}", reviewId);
+            reviewStorage.reduceRating(reviewId);
         }
     }
 
     @Override
-    public void removeDislike(long reviewID, long userID) {
-        Like like = reviewsLikeStorage.getDislikeById(reviewID, userID);
+    public void removeDislike(long reviewId, long userId) {
+        Like like = reviewsLikeStorage.getDislikeById(reviewId, userId);
         if (like == null) {
             throw new CreationFailException(
                     String.format(
                             "Невозможно удалить дизлайк, т.к. пользователь ID №%s не ставил дизлайк отзыву ID №%s",
-                            userID, reviewID)
+                            userId, reviewId)
             );
         }
 
-        boolean isSuccess = reviewsLikeStorage.removeDislike(reviewID, userID);
+        boolean isSuccess = reviewsLikeStorage.removeDislike(reviewId, userId);
         if (isSuccess) {
-            reviewStorage.increaseRating(reviewID);
-            log.debug("Удален дизлайк отзывову id = {}", reviewID);
+            reviewStorage.increaseRating(reviewId);
+            log.debug("Удален дизлайк отзывову id = {}", reviewId);
         }
     }
 }

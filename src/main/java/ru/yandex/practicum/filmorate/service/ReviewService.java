@@ -9,17 +9,17 @@ public interface ReviewService {
 
     Review update(Review review);
 
-    void remove(long reviewID);
+    void remove(long reviewId);
 
-    Review getByID(long reviewID);
+    Review getByID(long reviewId);
 
-    List<Review> getAllByFilmID(Long filmID, int count);
+    List<Review> getAllByFilmID(Long filmId, int count);
 
-    void addLike(long reviewID, long userID);
+    void addLike(long reviewId, long userId);
 
-    void addDislike(long reviewID, long userID);
+    void addDislike(long reviewId, long userId);
 
-    void removeLike(long reviewID, long userID);
+    void removeLike(long reviewId, long userId);
 
-    void removeDislike(long reviewID, long userID);
+    void removeDislike(long reviewId, long userId);
 }

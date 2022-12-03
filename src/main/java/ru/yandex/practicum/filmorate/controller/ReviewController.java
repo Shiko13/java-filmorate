@@ -36,13 +36,13 @@ public class ReviewController {
     }
 
     @DeleteMapping(path = "/{id}")
-    public void remove(@PathVariable ("id") long reviewID) {
-        reviewService.remove(reviewID);
+    public void remove(@PathVariable ("id") long reviewId) {
+        reviewService.remove(reviewId);
     }
 
     @GetMapping(path = "/{id}")
-    public Review getByID(@PathVariable ("id") long reviewID) {
-        return reviewService.getByID(reviewID);
+    public Review getByID(@PathVariable ("id") long reviewId) {
+        return reviewService.getByID(reviewId);
     }
 
     @GetMapping
@@ -52,38 +52,26 @@ public class ReviewController {
     }
 
     @PutMapping(path = "/{id}/like/{userId}")
-    public void addLike(@PathVariable ("id") long reviewID,
-                        @PathVariable ("userId") long userID) {
-        reviewService.addLike(reviewID, userID);
+    public void addLike(@PathVariable ("id") long reviewId,
+                        @PathVariable ("userId") long userId) {
+        reviewService.addLike(reviewId, userId);
     }
 
     @PutMapping(path = "/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable ("id") long reviewID,
-                           @PathVariable ("userId") long userID) {
-        reviewService.addDislike(reviewID, userID);
+    public void addDislike(@PathVariable ("id") long reviewId,
+                           @PathVariable ("userId") long userId) {
+        reviewService.addDislike(reviewId, userId);
     }
 
     @DeleteMapping(path = "/{id}/like/{userId}")
-    public void removeLike(@PathVariable ("id") long reviewID,
-                           @PathVariable ("userId") long userID) {
-        reviewService.removeLike(reviewID, userID);
+    public void removeLike(@PathVariable ("id") long reviewId,
+                           @PathVariable ("userId") long userId) {
+        reviewService.removeLike(reviewId, userId);
     }
 
     @DeleteMapping(path = "/{id}/dislike/{userId}")
-    public void removeDislike(@PathVariable ("id") long reviewID,
-                              @PathVariable ("userId") long userID) {
-        reviewService.removeDislike(reviewID, userID);
+    public void removeDislike(@PathVariable ("id") long reviewId,
+                              @PathVariable ("userId") long userId) {
+        reviewService.removeDislike(reviewId, userId);
     }
-
-/*API:
-1) POST /reviews Добавление нового отзыва. +
-2) PUT /reviews Редактирование уже имеющегося отзыва. +
-3) DELETE /reviews/{id} Удаление уже имеющегося отзыва. +
-4) GET /reviews/{id} Получение отзыва по идентификатору. +
-5) GET /reviews?filmId={filmId}&count={count} Получение всех отзывов по идентификатору
-фильма, если фильм не указан то все. Если кол-во не указано то 10.+
-6) PUT /reviews/{id}/like/{userId}  — пользователь ставит лайк отзыву.+
-7) PUT /reviews/{id}/dislike/{userId}  — пользователь ставит дизлайк отзыву.
-8) DELETE /reviews/{id}/like/{userId}  — пользователь удаляет лайк/дизлайк отзыву.
-9) DELETE /reviews/{id}/dislike/{userId}  — пользователь удаляет дизлайк отзыву.*/
 }
