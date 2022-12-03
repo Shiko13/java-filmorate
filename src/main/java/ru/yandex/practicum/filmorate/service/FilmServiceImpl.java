@@ -116,6 +116,17 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    public List<Film> searchFilmsByTitleByDirector(String query, String by) {
+        log.debug("Start request GET to /films/search query = {}, by = {}", query, by);
+        List<Film> films;
+        films = filmStorage.searchFilmsByTitleByDirector(query, by);
+        genreStorage.set(films);
+        directorStorage.set(films);
+
+        return films;
+    }
+
+    @Override
     public Film create(Film film) {
         log.debug("Start request POST to /films, with id = {}, name = {}, description = {}, " +
                         "releaseDate = {}, duration = {}, mpa = {}, genres = {}, directors = {}",
