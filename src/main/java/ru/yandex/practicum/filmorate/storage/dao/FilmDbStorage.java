@@ -320,21 +320,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private String getTopPopularQuery(Integer releaseYear, int count) {
-        LocalDate year = LocalDate.of(releaseYear, 1, 1);
-        Date firstDate = Date.valueOf(year);
-        Date lastDate = Date.valueOf(year.plusYears(1).minusDays(1));
-
-        return getTopPopularQuery() + "where f.RELEASE_DATE >= " +
-                firstDate + " AND f.RELEASE_DATE <= " + lastDate + " " +
+        return getTopPopularQuery() + "where extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
                 "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
     }
 
     private String getTopPopularQuery(Long genreId, Integer releaseYear, int count) {
-        LocalDate year = LocalDate.of(releaseYear, 1, 1);
         return getTopPopularQuery() + "join film_genres as fg on f.film_id = fg.film_id " +
                 "join genres as g on g.genre_id = fg.genre_id " +
-                "where g.genre_id = " + genreId + " and f.RELEASE_DATE BETWEEN " +
-                year + " AND " + year.plusYears(1).minusDays(1) + " " +
+                "where g.genre_id = " + genreId + " AND " +
+                "extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
                 "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
     }
 }
