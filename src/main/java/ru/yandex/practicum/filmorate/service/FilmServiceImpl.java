@@ -56,10 +56,10 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Set<Film> getTopMostLiked(int count) {
-        log.debug("Start request GET to /films/popular, count = " + count);
+    public Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count) {
+        log.debug("GET /films/popular?count={}&genreId={}&year={}", count, genreId, releaseYear);
 
-        List<Film> popularFilms = new ArrayList<>(filmStorage.readTopMostLiked(count));
+        List<Film> popularFilms = new ArrayList<>(filmStorage.getTopPopular(genreId, releaseYear, count));
         genreStorage.set(popularFilms);
         directorStorage.set(popularFilms);
 

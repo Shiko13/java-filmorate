@@ -35,8 +35,12 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> showTopMostLiked(@Positive @RequestParam(defaultValue = "10") int count) {
-        return filmService.getTopMostLiked(count);
+    public Collection<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
+                                          @RequestParam(name = "year", defaultValue = "-1") Integer releaseYear,
+                                          @RequestParam (defaultValue = "10") @Positive int count) {
+        if (releaseYear > 0) throwIfNotValidDate(LocalDate.of(releaseYear, 12, 28));
+
+        return filmService.getTopPopular(genreId, releaseYear, count);
     }
 
     @GetMapping("/director/{directorId}")
@@ -91,6 +95,16 @@ public class FilmController {
         log.debug("Start validation of film");
 
         if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
+            throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
+        }
+
+        log.debug("Validation successful passed");
+    }
+
+    public void throwIfNotValidDate(LocalDate releaseYear) {
+        log.debug("Start validation of film");
+
+        if (releaseYear.isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
             throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
         }
 
