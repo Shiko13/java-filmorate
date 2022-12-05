@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.CreationFailException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
 import ru.yandex.practicum.filmorate.storage.dao.mappers.ReviewMapper;
 
 import java.sql.PreparedStatement;

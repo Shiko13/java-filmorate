@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
@@ -18,22 +18,14 @@ import java.util.Set;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final MpaRatingStorage mpaRatingStorage;
     private final DirectorStorage directorStorage;
-
-    @Autowired
-    public FilmServiceImpl(@Qualifier("filmDb") FilmStorage filmStorage, LikeStorage likeStorage,
-                           GenreStorage genreStorage, MpaRatingStorage mpaRatingStorage, DirectorStorage directorStorage) {
-        this.filmStorage = filmStorage;
-        this.likeStorage = likeStorage;
-        this.genreStorage = genreStorage;
-        this.mpaRatingStorage = mpaRatingStorage;
-        this.directorStorage = directorStorage;
-    }
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public List<Film> getAll() {
@@ -151,6 +143,8 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Start request PUT to /films/{}/like/{}", filmId, userId);
 
         likeStorage.create(filmId, userId);
+
+        userEventListStorage.addEvent(userId, "LIKE", "ADD", filmId);
     }
 
     @Override
@@ -158,6 +152,8 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Start request DELETE to /films/{}/like/{}", filmId, userId);
 
         likeStorage.delete(filmId, userId);
+
+        userEventListStorage.addEvent(userId, "LIKE", "REMOVE", filmId);
     }
 
     @Override

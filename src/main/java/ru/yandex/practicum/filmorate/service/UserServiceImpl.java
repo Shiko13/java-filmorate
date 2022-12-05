@@ -1,26 +1,24 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserEvent;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
-
-    @Autowired
-    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage) {
-        this.userStorage = userStorage;
-        this.friendshipStorage = friendshipStorage;
-    }
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public List<User> getAll() {
@@ -41,6 +39,13 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request GET to /users/{}/friends/common/{}", userId, anotherUserId);
 
         return friendshipStorage.readCommon(userId, anotherUserId);
+    }
+
+    @Override
+    public List<UserEvent> getEventListByUserId(long id) {
+        log.debug("Start request GET to /users/{}/feed", id);
+
+        return userEventListStorage.getListById(id);
     }
 
     @Override
@@ -75,6 +80,8 @@ public class UserServiceImpl implements UserService {
         }
 
         friendshipStorage.create(userId, friendId);
+
+        userEventListStorage.addEvent(userId, "FRIEND", "ADD", friendId);
     }
 
     @Override
@@ -96,5 +103,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request DELETE to /users/{}/friends/{}", userId, friendId);
 
         friendshipStorage.delete(userId, friendId);
+
+        userEventListStorage.addEvent(userId, "FRIEND", "REMOVE", friendId);
     }
 }
