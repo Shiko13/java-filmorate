@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserEvent;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.List;
 
@@ -15,11 +17,14 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
+    private final UserEventListStorage userEventListStorage;
 
     @Autowired
-    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage) {
+    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage,
+                           UserEventListStorage userEventListStorage) {
         this.userStorage = userStorage;
         this.friendshipStorage = friendshipStorage;
+        this.userEventListStorage = userEventListStorage;
     }
 
     @Override
@@ -41,6 +46,13 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request GET to /users/{}/friends/common/{}", userId, anotherUserId);
 
         return friendshipStorage.readCommon(userId, anotherUserId);
+    }
+
+    @Override
+    public List<UserEvent> getEventListByUserId(long id) {
+        log.debug("Start request GET to /users/{}/feed", id);
+
+        return userEventListStorage.getListById(id);
     }
 
     @Override

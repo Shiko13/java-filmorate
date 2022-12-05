@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.Objects;
 public class FriendshipDbStorage implements FriendshipStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public List<User> readAll(long userId) {
@@ -49,6 +52,11 @@ public class FriendshipDbStorage implements FriendshipStorage {
             );
         }
 
+        int numRow2 = userEventListStorage.addEvent(userOneId,"FRIEND", "ADD", userTwoId);
+        if(numRow2==0){
+            throw new NotFoundException(String.format("User with id = %d not found", userOneId));
+        }
+
         return Friendship.builder().
                 userOneId(userOneId).
                 userTwoId(userTwoId).
@@ -61,7 +69,12 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
         int numRow = jdbcTemplate.update(sqlQuery, userOneId, userTwoId);
         if (numRow == 0) {
-            throw new NotFoundException(String.format("User with id = %d or user with id = %d not found", userOneId, userTwoId));
+            throw new NotFoundException(String.format("User with id = %d or user with id = %d not found",userOneId, userTwoId));
+        }
+
+        int numRow2 = userEventListStorage.addEvent(userOneId,"FRIEND", "REMOVE", userTwoId);
+        if(numRow2==0){
+            throw new NotFoundException(String.format("User with id = %d not found", userOneId));
         }
     }
 
