@@ -7,10 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.CreationFailException;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewsLikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
 
@@ -22,6 +19,7 @@ public class ReviewServiceImpl implements ReviewService{
     private final ReviewsLikeStorage reviewsLikeStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public Review create(Review review) {
@@ -30,6 +28,9 @@ public class ReviewServiceImpl implements ReviewService{
 
         review = reviewStorage.create(review);
         log.debug("Добавлен отзыв к фильму id = {}", review.getFilmId());
+
+        userEventListStorage.addEvent(review.getUserId(),"REVIEW", "ADD", review.getId());
+
         return review;
     }
 
@@ -37,11 +38,17 @@ public class ReviewServiceImpl implements ReviewService{
     public Review update(Review review) {
         review = reviewStorage.update(review);
         log.debug("Отредактирован отзыв к фильму id = {}", review.getFilmId());
+
+        userEventListStorage.addEvent(getByID(review.getId()).getUserId(),"REVIEW", "UPDATE",
+                review.getId());
+
         return review;
     }
 
     @Override
     public void remove(long reviewId) {
+        userEventListStorage.addEvent(getByID(reviewId).getUserId(),"REVIEW", "REMOVE", reviewId);
+
         reviewStorage.remove(reviewId);
         log.debug("Удален отзыв id = {}", reviewId);
     }

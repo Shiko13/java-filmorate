@@ -16,21 +16,14 @@ import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
 public class LikeDbStorage implements LikeStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final UserEventListStorage userEventListStorage;
 
     @Override
     public Like create(long filmId, long userId) {
         String sqlQuery = "insert into likes values (?, ?)";
 
-
         int numRow = jdbcTemplate.update(sqlQuery, filmId, userId);
         if (numRow == 0) {
             throw new NotFoundException(String.format("Film with id = %d or user with id = %d not found", filmId, userId));
-        }
-
-        int numRow2 = userEventListStorage.addEvent(userId, "LIKE", "ADD", filmId);
-        if (numRow2 == 0) {
-            throw new NotFoundException(String.format("User with id = %d not found", userId));
         }
 
         return Like.builder().
@@ -48,12 +41,6 @@ public class LikeDbStorage implements LikeStorage {
         int numRow = jdbcTemplate.update(sqlQuery, filmId, userId);
         if (numRow == 0) {
             throw new NotFoundException(String.format("Film with id = %d or user with id = %d not found", filmId, userId));
-        }
-
-
-        int numRow2 = userEventListStorage.addEvent(userId, "LIKE", "REMOVE", filmId);
-        if (numRow2 == 0) {
-            throw new NotFoundException(String.format("User with id = %d not found", userId));
         }
     }
 }

@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,18 +14,11 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
     private final UserEventListStorage userEventListStorage;
-
-    @Autowired
-    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage,
-                           UserEventListStorage userEventListStorage) {
-        this.userStorage = userStorage;
-        this.friendshipStorage = friendshipStorage;
-        this.userEventListStorage = userEventListStorage;
-    }
 
     @Override
     public List<User> getAll() {
@@ -87,6 +80,8 @@ public class UserServiceImpl implements UserService {
         }
 
         friendshipStorage.create(userId, friendId);
+
+        userEventListStorage.addEvent(userId, "FRIEND", "ADD", friendId);
     }
 
     @Override
@@ -108,5 +103,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request DELETE to /users/{}/friends/{}", userId, friendId);
 
         friendshipStorage.delete(userId, friendId);
+
+        userEventListStorage.addEvent(userId, "FRIEND", "REMOVE", friendId);
     }
 }

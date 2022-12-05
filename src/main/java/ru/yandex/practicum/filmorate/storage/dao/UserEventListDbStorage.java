@@ -27,7 +27,7 @@ public class UserEventListDbStorage implements UserEventListStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, userId);
 
         while (sqlRowSet.next()) {
-            UserEvent userEvent = mapRow(sqlRowSet);
+            UserEvent userEvent = eventRow(sqlRowSet);
             userEvents.add(userEvent);
         }
 
@@ -42,7 +42,7 @@ public class UserEventListDbStorage implements UserEventListStorage {
                 userId, eventType, operation, entityId);
     }
 
-    public static UserEvent mapRow(SqlRowSet sqlRowSet) {
+    public static UserEvent eventRow(SqlRowSet sqlRowSet) {
         return UserEvent.builder().
                 timestamp(sqlRowSet.getLong("timestamps")).
                 userId(sqlRowSet.getLong("user_id")).

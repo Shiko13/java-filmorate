@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final UserEventListStorage userEventListStorage;
     private final String[] PRIMARY_KEY = new String[]{"review_id"};
 
     @Override
@@ -42,9 +41,6 @@ public class ReviewDbStorage implements ReviewStorage {
             return stmt;
         }, keyHolder);
         if (keyHolder.getKey() == null) throw new CreationFailException("Не удалось создать отзыв");
-
-        userEventListStorage.addEvent(review.getUserId(),"REVIEW", "ADD",
-                 keyHolder.getKey().longValue());
 
         return review.toBuilder().id(keyHolder.getKey().longValue()).build();
     }
@@ -65,18 +61,12 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new NotFoundException(String.format("Ревью c ID № %s не существует", review.getId()));
         }
 
-        userEventListStorage.addEvent(getByID(review.getId()).getUserId(),"REVIEW", "UPDATE",
-                 review.getId());
-
         return review;
     }
 
     @Override
     public void remove(long reviewId) {
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
-
-        userEventListStorage.addEvent(getByID(reviewId).getUserId(),"REVIEW", "REMOVE",
-                reviewId);
 
         jdbcTemplate.update(sqlQuery, reviewId);
     }
