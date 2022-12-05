@@ -52,8 +52,8 @@ public class FriendshipDbStorage implements FriendshipStorage {
             );
         }
 
-        int numRow2 = userEventListStorage.addEvent(userOneId,"FRIEND", "ADD", userTwoId);
-        if(numRow2==0){
+        int numRow2 = userEventListStorage.addEvent(userOneId, "FRIEND", "ADD", userTwoId);
+        if (numRow2 == 0) {
             throw new NotFoundException(String.format("User with id = %d not found", userOneId));
         }
 
@@ -69,11 +69,11 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
         int numRow = jdbcTemplate.update(sqlQuery, userOneId, userTwoId);
         if (numRow == 0) {
-            throw new NotFoundException(String.format("User with id = %d or user with id = %d not found",userOneId, userTwoId));
+            throw new NotFoundException(String.format("User with id = %d or user with id = %d not found", userOneId, userTwoId));
         }
 
-        int numRow2 = userEventListStorage.addEvent(userOneId,"FRIEND", "REMOVE", userTwoId);
-        if(numRow2==0){
+        int numRow2 = userEventListStorage.addEvent(userOneId, "FRIEND", "REMOVE", userTwoId);
+        if (numRow2 == 0) {
             throw new NotFoundException(String.format("User with id = %d not found", userOneId));
         }
     }
