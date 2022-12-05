@@ -11,10 +11,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -56,6 +53,12 @@ public class FilmServiceImpl implements FilmService {
         directorStorage.set(popularFilms);
 
         return new HashSet<>(popularFilms);
+    }
+
+    @Override
+    public Set<Film> getCommon(long userId, long friendId) {
+        log.debug("Start request GET /films/common?userId={}&friendId={}", userId, friendId);
+        return filmStorage.getCommon(userId, friendId);
     }
 
     @Override

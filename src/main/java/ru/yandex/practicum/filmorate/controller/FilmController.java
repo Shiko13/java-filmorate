@@ -14,6 +14,7 @@ import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Validated
@@ -53,6 +54,14 @@ public class FilmController {
     public List<Film> searchFilmsByTitleByDirector(@RequestParam(required = false) String query,
                                                   @RequestParam(required = false) String by) {
         return filmService.searchFilmsByTitleByDirector(query, by);
+    }
+
+    @GetMapping("/common")
+    public Set<Film> getCommon(@RequestParam long userId,
+                               @RequestParam long friendId) {
+        if (userId < 0 || friendId < 0) throw new ValidateException("Необходимо заполнить id обоих пользователей");
+
+        return filmService.getCommon(userId, friendId);
     }
 
     @PostMapping

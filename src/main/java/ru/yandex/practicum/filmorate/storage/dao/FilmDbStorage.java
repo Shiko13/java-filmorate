@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -190,6 +189,21 @@ public class FilmDbStorage implements FilmStorage {
 
         Set<Film> films = mapRowToFilmSet(sqlRowSet);
         return new ArrayList<>(films);
+    }
+
+    @Override
+    public Set<Film> getCommon(long userId, long friendId) {
+        String sqlQuery = "SELECT * FROM films AS f " +
+                "INNER JOIN likes AS a ON a.film_id = f.film_id " +
+                "INNER JOIN likes AS b ON b.film_id = f.film_id " +
+                "INNER JOIN mpa_ratings AS с ON с.mpa_rating_id = f.mpa_rating " +
+                "LEFT JOIN (SELECT film_id, COUNT(user_id) AS rate FROM likes GROUP BY film_id) AS fl " +
+                "ON (fl.film_id = f.film_id) " +
+                "WHERE a.user_id = ? AND b.user_id = ?" +
+                "ORDER BY fl.rate DESC";
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, userId, friendId);
+        return mapRowToFilmSet(sqlRowSet);
     }
 
     @Override
