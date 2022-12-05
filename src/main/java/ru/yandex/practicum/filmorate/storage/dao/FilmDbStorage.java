@@ -193,6 +193,23 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getCommon(long userId, long friendId) {
+        /*String sqlQuery = "SELECT * FROM films AS f WHERE f.film_id IN (" +
+                "SELECT a.film_id FROM likes AS a " +
+                "INNER JOIN likes AS b ON a.film_id = b.film_id " +
+                "WHERE a.user_id = ? AND b.user_id = ?)";*/
+        String sqlQuery = "SELECT * FROM films AS f " +
+                "INNER JOIN likes AS l ON l.film_id = f.film_id " +
+                "WHERE l.user_id IN (?, ?)";
+
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, userId, friendId);
+        Collection<Film> films = mapRowToFilmSet(sqlRowSet);
+        System.out.println();
+        return films;
+    }
+
+    @Override
     public Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count) {
         String sqlQuery;
         if (genreId < 1 && releaseYear < 1) {

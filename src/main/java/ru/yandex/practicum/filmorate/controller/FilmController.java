@@ -55,6 +55,14 @@ public class FilmController {
         return filmService.searchFilmsByTitleByDirector(query, by);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommon(@RequestParam long userId,
+                                      @RequestParam long friendId) {
+        if (userId == 0 || friendId == 0) throw new ValidateException("Необходимо заполнить id обоих пользователей");
+
+        return filmService.getCommon(userId, friendId);
+    }
+
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         throwIfNotValidDate(film);
