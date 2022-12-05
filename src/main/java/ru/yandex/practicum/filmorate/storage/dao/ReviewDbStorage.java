@@ -65,7 +65,7 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new NotFoundException(String.format("Ревью c ID № %s не существует", review.getId()));
         }
 
-        userEventListStorage.addEvent(review.getUserId(),"REVIEW", "UPDATE",
+        userEventListStorage.addEvent(getByID(review.getId()).getUserId(),"REVIEW", "UPDATE",
                  review.getId());
 
         return review;
