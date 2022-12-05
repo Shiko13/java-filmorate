@@ -19,5 +19,5 @@ public interface FilmService extends Crud<Film> {
     List<Film> getSortListByDirector(long directorId, String sortBy);
     List<Film> searchFilmsByTitleByDirector(String query, String by);
     Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count);
-    Collection<Film> getCommon(long userId, long friendId);
+    Set<Film> getCommon(long userId, long friendId);
 }

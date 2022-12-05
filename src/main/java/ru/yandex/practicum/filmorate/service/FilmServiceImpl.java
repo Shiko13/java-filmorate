@@ -64,10 +64,9 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> getCommon(long userId, long friendId) {
+    public Set<Film> getCommon(long userId, long friendId) {
         log.debug("Start request GET /films/common?userId={}&friendId={}", userId, friendId);
-        Collection<Film> films = filmStorage.getCommon(userId, friendId);
-        return films;
+        return filmStorage.getCommon(userId, friendId);
     }
 
     @Override

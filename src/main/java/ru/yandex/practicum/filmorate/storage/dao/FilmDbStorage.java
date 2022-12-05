@@ -192,7 +192,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getCommon(long userId, long friendId) {
+    public Set<Film> getCommon(long userId, long friendId) {
         String sqlQuery = "SELECT * FROM films AS f " +
                 "INNER JOIN likes AS a ON a.film_id = f.film_id " +
                 "INNER JOIN likes AS b ON b.film_id = f.film_id " +

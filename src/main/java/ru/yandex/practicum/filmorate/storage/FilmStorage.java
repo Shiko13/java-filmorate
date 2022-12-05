@@ -18,5 +18,5 @@ public interface FilmStorage {
     List<Film> getSortByLikesFromDirector(long directorId);
     List<Film> searchFilmsByTitleByDirector(String query, String by);
     Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count);
-    Collection<Film> getCommon(long userId, long friendId);
+    Set<Film> getCommon(long userId, long friendId);
 }
