@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,10 +91,19 @@ public class FilmDbStorage implements FilmStorage {
         List<Genre> genres = film.getGenres().stream()
                 .distinct()
                 .collect(Collectors.toList());
-        for (Genre genre : genres) {
-            String sqlQueryGenre = "insert into film_genres values (?, ?)";
-            jdbcTemplate.update(sqlQueryGenre, film.getId(), genre.getId());
-        }
+
+        jdbcTemplate.batchUpdate(
+                "insert into film_genres values (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setLong(1, film.getId());
+                        ps.setLong(2, genres.get(i).getId());
+                    }
+                    public int getBatchSize() {
+                        return genres.size();
+                    }
+                });
+
         film.setGenres(genres);
     }
 
@@ -172,12 +183,12 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getSortByYearFromDirector(long directorId) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
-                    "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, fd.DIRECTOR_ID\n" +
-                    "from films as f\n" +
-                    "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n" +
-                    "join FILM_DIRECTORS as fd on f.FILM_ID = fd.FILM_ID\n" +
-                    "where fd.director_id = ?" +
-                    "order by f.RELEASE_DATE";
+                "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, fd.DIRECTOR_ID\n" +
+                "from films as f\n" +
+                "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n" +
+                "join FILM_DIRECTORS as fd on f.FILM_ID = fd.FILM_ID\n" +
+                "where fd.director_id = ?" +
+                "order by f.RELEASE_DATE";
 
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, directorId);
         validateDirectorId(directorId, sqlRowSet);

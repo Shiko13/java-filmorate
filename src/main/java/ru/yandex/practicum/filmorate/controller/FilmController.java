@@ -5,14 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Validated
@@ -21,10 +21,9 @@ import java.util.Collection;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmController {
 
-    private final LocalDate BIRTHDAY_OF_CINEMATOGRAPHY = LocalDate.of(1895, 12, 28);
     private final FilmService filmService;
     @GetMapping
-    public Collection<Film> findAll() {
+    public List<Film> findAll() {
         return filmService.getAll();
     }
 
@@ -34,27 +33,23 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> showTopMostLiked(@Positive @RequestParam(defaultValue = "10") int count) {
+    public Set<Film> showTopMostLiked(@Positive @RequestParam(defaultValue = "10") int count) {
         return filmService.getTopMostLiked(count);
     }
 
     @GetMapping("/director/{directorId}")
-    public Collection<Film> getByDirector(@PathVariable long directorId,
-                                          @RequestParam String sortBy) {
-        return filmService.getSortListByDirector(directorId, sortBy);
+    public List<Film> getByDirector(@PathVariable long directorId,
+                                    @RequestParam("sortBy") FilmSortBy filmSortBy) {
+        return filmService.getSortListByDirector(directorId, filmSortBy);
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        throwIfNotValidDate(film);
-
         return filmService.create(film);
     }
 
     @PutMapping
     public Film change(@Valid @RequestBody Film film) {
-        throwIfNotValidDate(film);
-
         return filmService.update(film);
     }
 
@@ -78,15 +73,5 @@ public class FilmController {
     @DeleteMapping
     public void deleteAll() {
         filmService.deleteAll();
-    }
-
-    public void throwIfNotValidDate(Film film) {
-        log.debug("Start validation of film");
-
-        if (film.getReleaseDate().isBefore(BIRTHDAY_OF_CINEMATOGRAPHY)) {
-            throw new ValidateException("Lumiere brothers look at you with surprise! (to much early date)");
-        }
-
-        log.debug("Validation successful passed");
     }
 }
