@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Builder;
 import lombok.Getter;
+import ru.yandex.practicum.filmorate.model.validators.EntityIdExistValidation;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -14,10 +15,11 @@ import java.util.Objects;
 public class Review {
     @JsonSetter("reviewId")
     private final Long id;
-    @NotNull
+    @EntityIdExistValidation
+    private final long userId; // Пользователь
+    @EntityIdExistValidation
     private final long filmId; // Фильм
     @NotNull
-    private final long userId; // Пользователь
     private final Boolean isPositive; // Тип отзыва позитивный - true или негативный - false
     @NotBlank
     private final String content; // содержание отзыва

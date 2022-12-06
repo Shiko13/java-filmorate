@@ -7,21 +7,21 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.CreationFailException;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewsLikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class ReviewServiceImpl implements ReviewService{
+public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final ReviewsLikeStorage reviewsLikeStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public Review create(Review review) {
@@ -30,6 +30,10 @@ public class ReviewServiceImpl implements ReviewService{
 
         review = reviewStorage.create(review);
         log.debug("Добавлен отзыв к фильму id = {}", review.getFilmId());
+
+        userEventListStorage.addEvent(review.getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.ADD), review.getId());
+
         return review;
     }
 
@@ -37,11 +41,18 @@ public class ReviewServiceImpl implements ReviewService{
     public Review update(Review review) {
         review = reviewStorage.update(review);
         log.debug("Отредактирован отзыв к фильму id = {}", review.getFilmId());
+
+        userEventListStorage.addEvent(getByID(review.getId()).getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.UPDATE), review.getId());
+
         return review;
     }
 
     @Override
     public void remove(long reviewId) {
+        userEventListStorage.addEvent(getByID(reviewId).getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.REMOVE), reviewId);
+
         reviewStorage.remove(reviewId);
         log.debug("Удален отзыв id = {}", reviewId);
     }
@@ -79,7 +90,7 @@ public class ReviewServiceImpl implements ReviewService{
 
         boolean isSuccess = reviewsLikeStorage.addLike(reviewId, userId);
         if (isSuccess) {
-            reviewStorage.increaseRating(reviewId);
+            reviewStorage.updateRating(reviewId);
             log.debug("Добавлен лайк отзывову id = {}", reviewId);
         }
     }
@@ -98,7 +109,7 @@ public class ReviewServiceImpl implements ReviewService{
         boolean isSuccess = reviewsLikeStorage.addDislike(reviewId, userId);
         if (isSuccess) {
             log.debug("Добавлен дизлайк отзывову id = {}", reviewId);
-            reviewStorage.reduceRating(reviewId);
+            reviewStorage.updateRating(reviewId);
         }
     }
 
@@ -116,7 +127,7 @@ public class ReviewServiceImpl implements ReviewService{
         boolean isSuccess = reviewsLikeStorage.removeLike(reviewId, userId);
         if (isSuccess) {
             log.debug("Удален лайк отзывову id = {}", reviewId);
-            reviewStorage.reduceRating(reviewId);
+            reviewStorage.updateRating(reviewId);
         }
     }
 
@@ -133,7 +144,7 @@ public class ReviewServiceImpl implements ReviewService{
 
         boolean isSuccess = reviewsLikeStorage.removeDislike(reviewId, userId);
         if (isSuccess) {
-            reviewStorage.increaseRating(reviewId);
+            reviewStorage.updateRating(reviewId);
             log.debug("Удален дизлайк отзывову id = {}", reviewId);
         }
     }
