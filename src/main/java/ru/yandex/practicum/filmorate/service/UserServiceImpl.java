@@ -55,6 +55,8 @@ public class UserServiceImpl implements UserService {
     public List<User> getAllFriends(long id) {
         log.debug("Start request GET to /users/{}/friends", id);
 
+        getById(id);
+
         return friendshipStorage.readAll(id);
     }
 

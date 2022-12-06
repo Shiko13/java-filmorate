@@ -85,6 +85,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
         return users;
     }
 
+
     public static User mapRow(SqlRowSet sqlRowSet) {
         return User.builder().
                 id(sqlRowSet.getInt("user_id")).

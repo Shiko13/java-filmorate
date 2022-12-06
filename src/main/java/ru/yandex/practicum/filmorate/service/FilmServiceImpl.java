@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -57,6 +57,12 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    public Set<Film> getCommon(long userId, long friendId) {
+        log.debug("Start request GET /films/common?userId={}&friendId={}", userId, friendId);
+        return filmStorage.getCommon(userId, friendId);
+    }
+
+    @Override
     public List<Genre> getAllGenres() {
         log.debug("Start request GET to /films");
 
@@ -90,15 +96,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getSortListByDirector(long directorId, String sortBy) {
+    public List<Film> getSortListByDirector(long directorId, FilmSortBy filmSortBy) {
         List<Film> films;
-        if (sortBy.equals("year")) {
-            films = filmStorage.getSortByYearFromDirector(directorId);
-        } else if (sortBy.equals("likes")) {
-            films = filmStorage.getSortByLikesFromDirector(directorId);
-        } else {
-            throw new ValidateException("Incorrect parameters of request");
+
+        switch (filmSortBy) {
+            case YEAR:
+                films = filmStorage.getSortByYearFromDirector(directorId);
+                break;
+            case LIKES:
+                films = filmStorage.getSortByLikesFromDirector(directorId);
+                break;
+            default:
+                throw new ValidateException("Incorrect parameters of request");
         }
+
         genreStorage.set(films);
         directorStorage.set(films);
 
