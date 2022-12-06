@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -36,10 +37,8 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
-                                          @RequestParam(name = "year", defaultValue = "-1") Integer releaseYear,
+                                          @RequestParam (name = "year", defaultValue = "-1") Integer releaseYear,
                                           @RequestParam (defaultValue = "10") @Positive int count) {
-        if (releaseYear > 0) throwIfNotValidDate(LocalDate.of(releaseYear, 12, 28));
-
         return filmService.getTopPopular(genreId, releaseYear, count);
     }
 
