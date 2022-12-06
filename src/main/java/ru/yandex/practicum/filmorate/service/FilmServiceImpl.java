@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
@@ -153,7 +155,8 @@ public class FilmServiceImpl implements FilmService {
 
         likeStorage.create(filmId, userId);
 
-        userEventListStorage.addEvent(userId, "LIKE", "ADD", filmId);
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.LIKE), String.valueOf(TypeOfOperation.ADD),
+                filmId);
     }
 
     @Override
@@ -162,7 +165,8 @@ public class FilmServiceImpl implements FilmService {
 
         likeStorage.delete(filmId, userId);
 
-        userEventListStorage.addEvent(userId, "LIKE", "REMOVE", filmId);
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.LIKE), String.valueOf(TypeOfOperation.REMOVE),
+                filmId);
     }
 
     @Override

@@ -22,7 +22,6 @@ import java.util.Objects;
 public class FriendshipDbStorage implements FriendshipStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final UserEventListStorage userEventListStorage;
 
     @Override
     public List<User> readAll(long userId) {
