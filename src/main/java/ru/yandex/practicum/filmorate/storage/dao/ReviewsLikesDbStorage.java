@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 @Slf4j
 public class ReviewsLikesDbStorage implements ReviewsLikeStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final LikeMapper likeMapper;
 
     @Override
     public boolean addLike(long reviewId, long userId) {
@@ -67,7 +68,7 @@ public class ReviewsLikesDbStorage implements ReviewsLikeStorage {
                     stmt.setLong(1, reviewId);
                     stmt.setLong(2, userId);
                     return stmt;
-                }, new LikeMapper())
+                }, likeMapper)
                 .stream()
                 .findFirst()
                 .orElse(null);
