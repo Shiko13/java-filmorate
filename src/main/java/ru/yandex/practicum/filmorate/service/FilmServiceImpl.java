@@ -155,7 +155,8 @@ public class FilmServiceImpl implements FilmService {
 
         likeStorage.create(filmId, userId);
 
-        userEventListStorage.addEvent(userId, TypeOfEvent.LIKE.toString(), TypeOfOperation.ADD.toString(), filmId);
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.LIKE), String.valueOf(TypeOfOperation.ADD),
+                filmId);
     }
 
     @Override
@@ -164,7 +165,8 @@ public class FilmServiceImpl implements FilmService {
 
         likeStorage.delete(filmId, userId);
 
-        userEventListStorage.addEvent(userId, TypeOfEvent.LIKE.toString(), TypeOfOperation.REMOVE.toString(), filmId);
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.LIKE), String.valueOf(TypeOfOperation.REMOVE),
+                filmId);
     }
 
     @Override

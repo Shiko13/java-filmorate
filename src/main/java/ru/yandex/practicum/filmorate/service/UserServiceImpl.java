@@ -86,7 +86,8 @@ public class UserServiceImpl implements UserService {
 
         friendshipStorage.create(userId, friendId);
 
-        userEventListStorage.addEvent(userId, TypeOfEvent.FRIEND.toString(), TypeOfOperation.ADD.toString(), friendId);
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.FRIEND), String.valueOf(TypeOfOperation.ADD),
+                friendId);
     }
 
     @Override
@@ -109,7 +110,7 @@ public class UserServiceImpl implements UserService {
 
         friendshipStorage.delete(userId, friendId);
 
-        userEventListStorage.addEvent(userId, TypeOfEvent.FRIEND.toString(), TypeOfOperation.REMOVE.toString(),
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.FRIEND), String.valueOf(TypeOfOperation.REMOVE),
                 friendId);
     }
 }

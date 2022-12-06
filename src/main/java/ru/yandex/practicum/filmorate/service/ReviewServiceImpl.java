@@ -31,8 +31,8 @@ public class ReviewServiceImpl implements ReviewService {
         review = reviewStorage.create(review);
         log.debug("Добавлен отзыв к фильму id = {}", review.getFilmId());
 
-        userEventListStorage.addEvent(review.getUserId(), TypeOfEvent.REVIEW.toString(), TypeOfOperation.ADD.toString(),
-                review.getId());
+        userEventListStorage.addEvent(review.getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.ADD), review.getId());
 
         return review;
     }
@@ -42,16 +42,16 @@ public class ReviewServiceImpl implements ReviewService {
         review = reviewStorage.update(review);
         log.debug("Отредактирован отзыв к фильму id = {}", review.getFilmId());
 
-        userEventListStorage.addEvent(getByID(review.getId()).getUserId(), TypeOfEvent.REVIEW.toString(),
-                TypeOfOperation.UPDATE.toString(), review.getId());
+        userEventListStorage.addEvent(getByID(review.getId()).getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.UPDATE), review.getId());
 
         return review;
     }
 
     @Override
     public void remove(long reviewId) {
-        userEventListStorage.addEvent(getByID(reviewId).getUserId(), TypeOfEvent.REVIEW.toString(),
-                TypeOfOperation.REMOVE.toString(), reviewId);
+        userEventListStorage.addEvent(getByID(reviewId).getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.REMOVE), reviewId);
 
         reviewStorage.remove(reviewId);
         log.debug("Удален отзыв id = {}", reviewId);
