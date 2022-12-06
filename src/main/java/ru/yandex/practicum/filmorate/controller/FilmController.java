@@ -57,8 +57,8 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public Set<Film> getCommon(@RequestParam long userId,
-                               @RequestParam long friendId) {
+    public Set<Film> getCommon(@RequestParam @Positive long userId,
+                               @RequestParam @Positive long friendId) {
         if (userId < 0 || friendId < 0) throw new ValidateException("Необходимо заполнить id обоих пользователей");
 
         return filmService.getCommon(userId, friendId);
