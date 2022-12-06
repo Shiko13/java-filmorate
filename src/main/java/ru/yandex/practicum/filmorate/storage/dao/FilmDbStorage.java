@@ -166,21 +166,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> readTopMostLiked(int count) {
-        String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, mr.MPA_RATING_ID, " +
-                "mr.MPA_RATING_NAME\n" +
-                "from FILMS as f\n" +
-                "left join LIKES as l on f.FILM_ID = l.FILM_ID\n" +
-                "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID\n" +
-                "group by f.film_id\n" +
-                "order by count(l.FILM_ID) desc\n" +
-                "limit " + count;
-
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
-        return mapRowToFilmSet(sqlRowSet);
-    }
-
-    @Override
     public List<Film> getSortByYearFromDirector(long directorId) {
         String sqlQuery = "select f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
                 "mr.MPA_RATING_ID, mr.MPA_RATING_NAME, fd.DIRECTOR_ID\n" +
@@ -213,6 +198,80 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, directorId);
         validateDirectorId(directorId, sqlRowSet);
 
+        Set<Film> films = mapRowToFilmSet(sqlRowSet);
+        return new ArrayList<>(films);
+    }
+
+    @Override
+    public Set<Film> getCommon(long userId, long friendId) {
+        String sqlQuery = "SELECT * FROM films AS f " +
+                "INNER JOIN likes AS a ON a.film_id = f.film_id " +
+                "INNER JOIN likes AS b ON b.film_id = f.film_id " +
+                "INNER JOIN mpa_ratings AS с ON с.mpa_rating_id = f.mpa_rating " +
+                "LEFT JOIN (SELECT film_id, COUNT(user_id) AS rate FROM likes GROUP BY film_id) AS fl " +
+                "ON (fl.film_id = f.film_id) " +
+                "WHERE a.user_id = ? AND b.user_id = ?" +
+                "ORDER BY fl.rate DESC";
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, userId, friendId);
+        return mapRowToFilmSet(sqlRowSet);
+    }
+
+    @Override
+    public Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count) {
+        String sqlQuery;
+        if (genreId < 1 && releaseYear < 1) {
+            sqlQuery = getTopPopularQuery(count);
+        } else if (genreId > 0 && releaseYear < 1) {
+            sqlQuery = getTopPopularQuery(genreId, count);
+        } else if (genreId < 0 && releaseYear > 0) {
+            sqlQuery = getTopPopularQuery(releaseYear, count);
+        } else {
+            sqlQuery = getTopPopularQuery(genreId, releaseYear, count);
+        }
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
+        return mapRowToFilmSet(sqlRowSet);
+    }
+
+    public List<Film> searchFilmsByTitleByDirector(String query, String by) {
+        boolean isByContainTitle = by.toLowerCase().contains("title");
+        boolean isByContainDirector = by.toLowerCase().contains("director");
+        StringBuilder sqlQuery = new StringBuilder();
+        sqlQuery.append(
+                "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                        "mr.mpa_rating_id, mr.mpa_rating_name, fl.rate "+
+                        "FROM films AS f " +
+                        "JOIN mpa_ratings AS mr ON (mr.mpa_rating_id = f.mpa_rating) " +
+                        "LEFT JOIN " +
+                        "(SELECT film_id, COUNT(user_id) AS rate " +
+                        "FROM likes " +
+                        "GROUP BY film_id) AS fl ON (fl.film_id = f.film_id) " +
+                        "LEFT JOIN film_directors AS fd ON (fd.film_id = f.film_id)" +
+                        "LEFT JOIN directors AS d ON (fd.director_id = d.director_id) ");
+        if (query != null) {
+            if (isByContainTitle || isByContainDirector) {
+                sqlQuery.append(
+                        "WHERE ");
+                if (isByContainTitle) {
+                    sqlQuery.append(
+                            "LOWER(f.film_name) like '%" + query.toLowerCase() + "%' ");
+                }
+                if (isByContainDirector) {
+                    if (isByContainTitle) {
+                        sqlQuery.append(
+                                " OR ");
+                    }
+                    sqlQuery.append(
+                            "LOWER(d.director_name) like '%" + query.toLowerCase() + "%' " +
+                            " OR " +
+                            "LOWER(d.director_surname) like '%" + query.toLowerCase() + "%' ");
+                }
+            }
+        }
+        sqlQuery.append(
+                "ORDER BY fl.rate DESC ");
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery.toString());
         Set<Film> films = mapRowToFilmSet(sqlRowSet);
         return new ArrayList<>(films);
     }
@@ -267,5 +326,34 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return films;
+    }
+
+    private String getTopPopularQuery() {
+        return "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, mr.MPA_RATING_ID, " +
+                "mr.MPA_RATING_NAME from FILMS as f left join LIKES as l on f.FILM_ID = l.FILM_ID " +
+                "join mpa_ratings as mr on f.MPA_RATING = mr.MPA_RATING_ID ";
+    }
+
+    private String getTopPopularQuery(int count) {
+        return getTopPopularQuery() + "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
+    }
+
+    private String getTopPopularQuery(Long genreId, int count) {
+        return getTopPopularQuery() + "join film_genres as fg on f.film_id = fg.film_id " +
+                "join genres as g on g.genre_id = fg.genre_id where g.genre_id = " + genreId + " " +
+                "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
+    }
+
+    private String getTopPopularQuery(Integer releaseYear, int count) {
+        return getTopPopularQuery() + "where extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
+                "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
+    }
+
+    private String getTopPopularQuery(Long genreId, Integer releaseYear, int count) {
+        return getTopPopularQuery() + "join film_genres as fg on f.film_id = fg.film_id " +
+                "join genres as g on g.genre_id = fg.genre_id " +
+                "where g.genre_id = " + genreId + " AND " +
+                "extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
+                "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
     }
 }

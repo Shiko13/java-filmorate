@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaRatingStorage;
 
@@ -28,7 +29,12 @@ public class MpaRatingDbStorage implements MpaRatingStorage {
     public Mpa readById(int mpaRatingId) {
         log.debug("Start storage with id = {}", mpaRatingId);
         String sqlQuery = "select * from mpa_ratings where mpa_rating_id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, MpaRatingDbStorage::mapRow, mpaRatingId);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, MpaRatingDbStorage::mapRow, mpaRatingId);
+        } catch (Exception e) {
+            throw new NotFoundException(String.format("MPA c ID № %s не существует", mpaRatingId));
+        }
+
     }
 
     private static Mpa mapRow(ResultSet resultSet, int rowNum) throws SQLException {

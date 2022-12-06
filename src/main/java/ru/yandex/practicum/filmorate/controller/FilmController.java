@@ -33,14 +33,32 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Set<Film> showTopMostLiked(@Positive @RequestParam(defaultValue = "10") int count) {
-        return filmService.getTopMostLiked(count);
+    public Collection<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
+                                          @RequestParam(name = "year", defaultValue = "-1") Integer releaseYear,
+                                          @RequestParam (defaultValue = "10") @Positive int count) {
+        if (releaseYear > 0) throwIfNotValidDate(LocalDate.of(releaseYear, 12, 28));
+
+        return filmService.getTopPopular(genreId, releaseYear, count);
     }
 
     @GetMapping("/director/{directorId}")
     public List<Film> getByDirector(@PathVariable long directorId,
                                     @RequestParam("sortBy") FilmSortBy filmSortBy) {
         return filmService.getSortListByDirector(directorId, filmSortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilmsByTitleByDirector(@RequestParam(required = false) String query,
+                                                  @RequestParam(required = false) String by) {
+        return filmService.searchFilmsByTitleByDirector(query, by);
+    }
+
+    @GetMapping("/common")
+    public Set<Film> getCommon(@RequestParam long userId,
+                               @RequestParam long friendId) {
+        if (userId < 0 || friendId < 0) throw new ValidateException("Необходимо заполнить id обоих пользователей");
+
+        return filmService.getCommon(userId, friendId);
     }
 
     @PostMapping
