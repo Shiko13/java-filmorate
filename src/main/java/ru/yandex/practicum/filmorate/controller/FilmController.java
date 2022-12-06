@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.List;
@@ -35,8 +36,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Set<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
-                                          @RequestParam(name = "year", defaultValue = "-1") Integer releaseYear,
+    public Collection<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
+                                          @RequestParam (name = "year", defaultValue = "-1") Integer releaseYear,
                                           @RequestParam (defaultValue = "10") @Positive int count) {
         return filmService.getTopPopular(genreId, releaseYear, count);
     }
