@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final ReviewMapper reviewMapper;
     private final String[] PRIMARY_KEY = new String[]{"review_id"};
 
     @Override
@@ -78,7 +79,7 @@ public class ReviewDbStorage implements ReviewStorage {
                     PreparedStatement stmt = con.prepareStatement(sqlQuery, PRIMARY_KEY);
                     stmt.setLong(1, reviewId);
                     return stmt;
-                }, new ReviewMapper())
+                }, reviewMapper)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException(
@@ -95,7 +96,7 @@ public class ReviewDbStorage implements ReviewStorage {
             stmt.setLong(1, filmId);
             stmt.setInt(2, count);
             return stmt;
-        }, new ReviewMapper());
+        }, reviewMapper);
 
         reviews = sortReviews(reviews);
         return reviews;
@@ -109,31 +110,25 @@ public class ReviewDbStorage implements ReviewStorage {
             PreparedStatement stmt = con.prepareStatement(sqlQuery, PRIMARY_KEY);
             stmt.setInt(1, count);
             return stmt;
-        }, new ReviewMapper());
+        }, reviewMapper);
 
         reviews = sortReviews(reviews);
         return reviews;
     }
 
     @Override
-    public void increaseRating(long reviewId) {
-        String sqlQuery = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
-        realiseRatingQuery(sqlQuery, reviewId);
-        log.debug("увеличен рейтинг отзывова id = {}", reviewId);
-    }
+    public void updateRating(long reviewId) {
+        String sqlQuery = "UPDATE reviews AS r SET useful = " +
+                "(SELECT COUNT(l.user_id) from reviews_likes AS l  WHERE l.review_id = r.review_id) - " +
+                "(SELECT COUNT(d.user_id) from reviews_dislikes AS d  WHERE d.review_id = r.review_id) " +
+                "WHERE r.review_id = ?";
 
-    @Override
-    public void reduceRating(long reviewId) {
-        String sqlQuery = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
-        realiseRatingQuery(sqlQuery, reviewId);
-        log.debug("уменьшин рейтинг отзывова id = {}", reviewId);
-    }
-
-    private void realiseRatingQuery(String sqlQuery, long reviewId) {
         int updatedReviewId = jdbcTemplate.update(sqlQuery, reviewId);
         if (updatedReviewId == 0) {
             throw new NotFoundException(String.format("Ревью c ID № %s не существует", reviewId));
         }
+
+        log.debug("уменьшин рейтинг отзывова id = {}", reviewId);
     }
 
     private List<Review> sortReviews(List<Review> reviews) {

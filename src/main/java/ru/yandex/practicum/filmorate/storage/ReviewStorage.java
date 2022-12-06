@@ -18,7 +18,5 @@ public interface ReviewStorage {
 
     List<Review> getAll(int count);
 
-    void increaseRating(long reviewId);
-
-    void reduceRating(long reviewId);
+    void updateRating(long reviewId);
 }
