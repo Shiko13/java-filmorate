@@ -128,7 +128,7 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new NotFoundException(String.format("Ревью c ID № %s не существует", reviewId));
         }
 
-        log.debug("уменьшин рейтинг отзывова id = {}", reviewId);
+        log.debug("Рейтинг отзывова id = {} изменен", reviewId);
     }
 
     private List<Review> sortReviews(List<Review> reviews) {
