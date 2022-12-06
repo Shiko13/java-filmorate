@@ -33,7 +33,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
+    public Set<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
                                           @RequestParam(name = "year", defaultValue = "-1") Integer releaseYear,
                                           @RequestParam (defaultValue = "10") @Positive int count) {
         if (releaseYear > 0) throwIfNotValidDate(LocalDate.of(releaseYear, 12, 28));
