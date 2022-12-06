@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserEvent;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+
 import java.util.List;
 
 @Slf4j
@@ -81,7 +84,7 @@ public class UserServiceImpl implements UserService {
 
         friendshipStorage.create(userId, friendId);
 
-        userEventListStorage.addEvent(userId, "FRIEND", "ADD", friendId);
+        userEventListStorage.addEvent(userId, TypeOfEvent.FRIEND.toString(), TypeOfOperation.ADD.toString(), friendId);
     }
 
     @Override
@@ -104,6 +107,7 @@ public class UserServiceImpl implements UserService {
 
         friendshipStorage.delete(userId, friendId);
 
-        userEventListStorage.addEvent(userId, "FRIEND", "REMOVE", friendId);
+        userEventListStorage.addEvent(userId, TypeOfEvent.FRIEND.toString(), TypeOfOperation.REMOVE.toString(),
+                friendId);
     }
 }

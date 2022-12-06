@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.CreationFailException;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class ReviewServiceImpl implements ReviewService{
+public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final ReviewsLikeStorage reviewsLikeStorage;
     private final UserStorage userStorage;
@@ -29,7 +31,8 @@ public class ReviewServiceImpl implements ReviewService{
         review = reviewStorage.create(review);
         log.debug("Добавлен отзыв к фильму id = {}", review.getFilmId());
 
-        userEventListStorage.addEvent(review.getUserId(),"REVIEW", "ADD", review.getId());
+        userEventListStorage.addEvent(review.getUserId(), TypeOfEvent.REVIEW.toString(), TypeOfOperation.ADD.toString(),
+                review.getId());
 
         return review;
     }
@@ -39,15 +42,16 @@ public class ReviewServiceImpl implements ReviewService{
         review = reviewStorage.update(review);
         log.debug("Отредактирован отзыв к фильму id = {}", review.getFilmId());
 
-        userEventListStorage.addEvent(getByID(review.getId()).getUserId(),"REVIEW", "UPDATE",
-                review.getId());
+        userEventListStorage.addEvent(getByID(review.getId()).getUserId(), TypeOfEvent.REVIEW.toString(),
+                TypeOfOperation.UPDATE.toString(), review.getId());
 
         return review;
     }
 
     @Override
     public void remove(long reviewId) {
-        userEventListStorage.addEvent(getByID(reviewId).getUserId(),"REVIEW", "REMOVE", reviewId);
+        userEventListStorage.addEvent(getByID(reviewId).getUserId(), TypeOfEvent.REVIEW.toString(),
+                TypeOfOperation.REMOVE.toString(), reviewId);
 
         reviewStorage.remove(reviewId);
         log.debug("Удален отзыв id = {}", reviewId);

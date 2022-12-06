@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.ArrayList;
@@ -144,7 +142,7 @@ public class FilmServiceImpl implements FilmService {
 
         likeStorage.create(filmId, userId);
 
-        userEventListStorage.addEvent(userId, "LIKE", "ADD", filmId);
+        userEventListStorage.addEvent(userId, TypeOfEvent.LIKE.toString(), TypeOfOperation.ADD.toString(), filmId);
     }
 
     @Override
@@ -153,7 +151,7 @@ public class FilmServiceImpl implements FilmService {
 
         likeStorage.delete(filmId, userId);
 
-        userEventListStorage.addEvent(userId, "LIKE", "REMOVE", filmId);
+        userEventListStorage.addEvent(userId, TypeOfEvent.LIKE.toString(), TypeOfOperation.REMOVE.toString(), filmId);
     }
 
     @Override
