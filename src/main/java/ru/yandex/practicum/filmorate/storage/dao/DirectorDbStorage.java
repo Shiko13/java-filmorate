@@ -33,7 +33,6 @@ public class DirectorDbStorage implements DirectorStorage {
             Director director = Director.builder().
                     id(sqlRowSet.getLong("director_id")).
                     name(sqlRowSet.getString("director_name")).
-                    surname(sqlRowSet.getString("director_surname")).
                     build();
             film.getDirectors().add(director);
         }
@@ -43,7 +42,6 @@ public class DirectorDbStorage implements DirectorStorage {
         return Director.builder().
                 id(resultSet.getLong("director_id")).
                 name(resultSet.getString("director_name")).
-                surname(resultSet.getString("director_surname")).
                 build();
     }
 
@@ -85,13 +83,12 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director create(Director director) {
-        String sqlQuery = "insert into directors (director_name, director_surname) values (?, ?)";
+        String sqlQuery = "insert into directors (director_name) values (?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement statement = con.prepareStatement(sqlQuery, new String[]{"director_id"});
             statement.setString(1, director.getName());
-            statement.setString(2, director.getSurname());
             return statement;
         }, keyHolder);
         director.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
@@ -101,11 +98,9 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director update(Director director) {
-        String sqlQuery = "update directors set director_name = ?, director_surname = ? where director_id = ?";
+        String sqlQuery = "update directors set director_name = ? where director_id = ?";
 
-        readById(director.getId());
-
-        int numRow = jdbcTemplate.update(sqlQuery, director.getName(), director.getSurname(), director.getId());
+        int numRow = jdbcTemplate.update(sqlQuery, director.getName(), director.getId());
         if (numRow == 0) {
             throw new NotFoundException("Director with those parameters not allow updated");
         }

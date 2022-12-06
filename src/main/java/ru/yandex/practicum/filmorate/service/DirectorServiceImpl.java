@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,14 +11,11 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class DirectorServiceImpl implements DirectorService {
 
     private final DirectorStorage directorStorage;
 
-    @Autowired
-    public DirectorServiceImpl(DirectorStorage directorStorage) {
-        this.directorStorage = directorStorage;
-    }
 
     @Override
     public List<Director> getAll() {
@@ -35,16 +33,16 @@ public class DirectorServiceImpl implements DirectorService {
 
     @Override
     public Director create(Director director) {
-        log.debug("Start request POST to /directors, with id = {}, name = {}, surname = {}",
-                director.getId(), director.getName(), director.getSurname());
+        log.debug("Start request POST to /directors, with id = {}, name = {}",
+                director.getId(), director.getName());
 
         return directorStorage.create(director);
     }
 
     @Override
     public Director update(Director director) {
-        log.debug("Start request PUT to /directors, with id = {}, name = {}, surname = {}",
-                director.getId(), director.getName(), director.getSurname());
+        log.debug("Start request PUT to /directors, with id = {}, name = {}",
+                director.getId(), director.getName());
 
         return directorStorage.update(director);
     }

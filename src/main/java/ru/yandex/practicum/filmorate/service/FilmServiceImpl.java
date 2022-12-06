@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.*;
@@ -95,15 +96,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getSortListByDirector(long directorId, String sortBy) {
+    public List<Film> getSortListByDirector(long directorId, FilmSortBy filmSortBy) {
         List<Film> films;
-        if (sortBy.equals("year")) {
-            films = filmStorage.getSortByYearFromDirector(directorId);
-        } else if (sortBy.equals("likes")) {
-            films = filmStorage.getSortByLikesFromDirector(directorId);
-        } else {
-            throw new ValidateException("Incorrect parameters of request");
+
+        switch (filmSortBy) {
+            case YEAR:
+                films = filmStorage.getSortByYearFromDirector(directorId);
+                break;
+            case LIKES:
+                films = filmStorage.getSortByLikesFromDirector(directorId);
+                break;
+            default:
+                throw new ValidateException("Incorrect parameters of request");
         }
+
         genreStorage.set(films);
         directorStorage.set(films);
 
