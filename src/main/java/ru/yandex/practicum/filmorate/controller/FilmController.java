@@ -5,15 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -36,7 +33,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
+    public Set<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
                                           @RequestParam (name = "year", defaultValue = "-1") Integer releaseYear,
                                           @RequestParam (defaultValue = "10") @Positive int count) {
         return filmService.getTopPopular(genreId, releaseYear, count);
