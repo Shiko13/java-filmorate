@@ -7,10 +7,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +19,17 @@ public class UserServiceImpl implements UserService {
     private final FriendshipStorage friendshipStorage;
     private final LikeStorage likeStorage;
     private final FilmStorage filmStorage;
+    private final DirectorStorage directorStorage;
+    private final GenreStorage genreStorage;
 
     @Autowired
-    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage, LikeStorage likeStorage, FilmStorage filmStorage) {
+    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage, LikeStorage likeStorage, FilmStorage filmStorage, DirectorStorage directorStorage, GenreStorage genreStorage) {
         this.userStorage = userStorage;
         this.friendshipStorage = friendshipStorage;
         this.likeStorage = likeStorage;
         this.filmStorage = filmStorage;
+        this.directorStorage = directorStorage;
+        this.genreStorage = genreStorage;
     }
 
     @Override
@@ -53,14 +55,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<Film> getRecommendations(long id) {
-        return likeStorage.getRecommendations(id).stream()
+        List<Film> films = likeStorage.getRecommendations(id).stream()
                 .map(filmStorage::findById)
                 .collect(Collectors.toList());
+
+        genreStorage.set(films);
+        directorStorage.set(films);
+
+        return films;
     }
 
     @Override
     public List<User> getAllFriends(long id) {
         log.debug("Start request GET to /users/{}/friends", id);
+
+        getById(id);
 
         return friendshipStorage.readAll(id);
     }

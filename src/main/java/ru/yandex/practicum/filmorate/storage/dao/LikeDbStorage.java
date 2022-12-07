@@ -45,13 +45,14 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public List<Long> getRecommendations(long userId) {
-        String sqlQueryUser = "SELECT L.FILM_ID FROM\n" +
-                "(SELECT L2.USER_ID, COUNT(L2.FILM_ID) CNT FROM LIKES L1\n" +
-                "LEFT JOIN LIKES L2 ON L1.FILM_ID = L2.FILM_ID\n" +
-                "WHERE L1.USER_ID = ? AND L1.USER_ID <> L2.USER_ID\n" +
-                "GROUP BY L2.USER_ID ORDER BY CNT DESC LIMIT 1) U\n" +
-                "LEFT JOIN LIKES L ON U.USER_ID = L.USER_ID\n" +
-                "WHERE L.FILM_ID NOT IN (SELECT FILM_ID FROM LIKES WHERE USER_ID = ?)";
+        String sqlQueryUser = "select l3.film_id from\n" +
+                "(select l1.user_id, count(l1.film_id) count from likes as l\n" +
+                "left join likes as l1 on l.film_id = l1.film_id\n" +
+                "where l.user_id = ? and l.user_id <> l1.user_id\n" +
+                "group by l1.user_id order by count desc limit 1) as sub\n" +
+                "left join likes as l3 on sub.user_id = l3.user_id\n" +
+                "where l3.film_id not in (select film_id from likes where user_id = ?)";
+
         return jdbcTemplate.query(sqlQueryUser,
                 (rs, rowNum) -> rs.getLong("FILM_ID"), userId, userId);
     }
