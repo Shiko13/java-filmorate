@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
+
 
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class LikeDbStorage implements LikeStorage {
         }
 
         return Like.builder().
-                filmId(filmId).
+                entityId(filmId).
                 userId(userId).
                 build();
 

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserEvent;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -45,6 +46,11 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable long id) {
         return userService.getRecommendations(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<UserEvent> getEventListByUserId(@PathVariable long id) {
+        return userService.getEventListByUserId(id);
     }
 
     @PostMapping

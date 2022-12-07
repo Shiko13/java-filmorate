@@ -1,39 +1,31 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final GenreStorage genreStorage;
     private final MpaRatingStorage mpaRatingStorage;
     private final DirectorStorage directorStorage;
-
-    @Autowired
-    public FilmServiceImpl(@Qualifier("filmDb") FilmStorage filmStorage, LikeStorage likeStorage,
-                           GenreStorage genreStorage, MpaRatingStorage mpaRatingStorage, DirectorStorage directorStorage) {
-        this.filmStorage = filmStorage;
-        this.likeStorage = likeStorage;
-        this.genreStorage = genreStorage;
-        this.mpaRatingStorage = mpaRatingStorage;
-        this.directorStorage = directorStorage;
-    }
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public List<Film> getAll() {
@@ -56,14 +48,20 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Set<Film> getTopMostLiked(int count) {
-        log.debug("Start request GET to /films/popular, count = " + count);
+    public Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count) {
+        log.debug("GET /films/popular?count={}&genreId={}&year={}", count, genreId, releaseYear);
 
-        List<Film> popularFilms = new ArrayList<>(filmStorage.readTopMostLiked(count));
+        List<Film> popularFilms = new ArrayList<>(filmStorage.getTopPopular(genreId, releaseYear, count));
         genreStorage.set(popularFilms);
         directorStorage.set(popularFilms);
 
         return new HashSet<>(popularFilms);
+    }
+
+    @Override
+    public Set<Film> getCommon(long userId, long friendId) {
+        log.debug("Start request GET /films/common?userId={}&friendId={}", userId, friendId);
+        return filmStorage.getCommon(userId, friendId);
     }
 
     @Override
@@ -100,15 +98,31 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getSortListByDirector(long directorId, String sortBy) {
+    public List<Film> getSortListByDirector(long directorId, FilmSortBy filmSortBy) {
         List<Film> films;
-        if (sortBy.equals("year")) {
-            films = filmStorage.getSortByYearFromDirector(directorId);
-        } else if (sortBy.equals("likes")) {
-            films = filmStorage.getSortByLikesFromDirector(directorId);
-        } else {
-            throw new ValidateException("Incorrect parameters of request");
+
+        switch (filmSortBy) {
+            case YEAR:
+                films = filmStorage.getSortByYearFromDirector(directorId);
+                break;
+            case LIKES:
+                films = filmStorage.getSortByLikesFromDirector(directorId);
+                break;
+            default:
+                throw new ValidateException("Incorrect parameters of request");
         }
+
+        genreStorage.set(films);
+        directorStorage.set(films);
+
+        return films;
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitleByDirector(String query, String by) {
+        log.debug("Start request GET to /films/search query = {}, by = {}", query, by);
+        List<Film> films;
+        films = filmStorage.searchFilmsByTitleByDirector(query, by);
         genreStorage.set(films);
         directorStorage.set(films);
 
@@ -141,6 +155,9 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Start request PUT to /films/{}/like/{}", filmId, userId);
 
         likeStorage.create(filmId, userId);
+
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.LIKE), String.valueOf(TypeOfOperation.ADD),
+                filmId);
     }
 
     @Override
@@ -148,6 +165,9 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Start request DELETE to /films/{}/like/{}", filmId, userId);
 
         likeStorage.delete(filmId, userId);
+
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.LIKE), String.valueOf(TypeOfOperation.REMOVE),
+                filmId);
     }
 
     @Override
