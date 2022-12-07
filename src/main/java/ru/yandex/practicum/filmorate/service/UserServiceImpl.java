@@ -27,17 +27,6 @@ public class UserServiceImpl implements UserService {
     private final GenreStorage genreStorage;
     private final UserEventListStorage userEventListStorage;
 
-    @Autowired
-    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage, LikeStorage likeStorage, FilmStorage filmStorage, DirectorStorage directorStorage, GenreStorage genreStorage, UserEventListStorage userEventListStorage) {
-        this.userStorage = userStorage;
-        this.friendshipStorage = friendshipStorage;
-        this.likeStorage = likeStorage;
-        this.filmStorage = filmStorage;
-        this.directorStorage = directorStorage;
-        this.genreStorage = genreStorage;
-        this.userEventListStorage = userEventListStorage;
-    }
-
     @Override
     public List<User> getAll() {
         log.debug("Start request GET to /users");
