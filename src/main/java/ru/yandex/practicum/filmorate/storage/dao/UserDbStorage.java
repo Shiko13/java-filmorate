@@ -93,6 +93,7 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+
     public static User mapRow(ResultSet resultSet, long rowNum) {
         User user;
         try {
