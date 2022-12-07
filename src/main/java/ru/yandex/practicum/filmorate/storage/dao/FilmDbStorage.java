@@ -99,6 +99,7 @@ public class FilmDbStorage implements FilmStorage {
                         ps.setLong(1, film.getId());
                         ps.setLong(2, genres.get(i).getId());
                     }
+
                     public int getBatchSize() {
                         return genres.size();
                     }
@@ -240,7 +241,7 @@ public class FilmDbStorage implements FilmStorage {
         StringBuilder sqlQuery = new StringBuilder();
         sqlQuery.append(
                 "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
-                        "mr.mpa_rating_id, mr.mpa_rating_name, fl.rate "+
+                        "mr.mpa_rating_id, mr.mpa_rating_name, fl.rate " +
                         "FROM films AS f " +
                         "JOIN mpa_ratings AS mr ON (mr.mpa_rating_id = f.mpa_rating) " +
                         "LEFT JOIN " +
@@ -254,18 +255,14 @@ public class FilmDbStorage implements FilmStorage {
                 sqlQuery.append(
                         "WHERE ");
                 if (isByContainTitle) {
-                    sqlQuery.append(
-                            "LOWER(f.film_name) like '%" + query.toLowerCase() + "%' ");
+                    sqlQuery.append("LOWER(f.film_name) like '%").append(query.toLowerCase()).append("%' ");
                 }
                 if (isByContainDirector) {
                     if (isByContainTitle) {
                         sqlQuery.append(
                                 " OR ");
                     }
-                    sqlQuery.append(
-                            "LOWER(d.director_name) like '%" + query.toLowerCase() + "%' " +
-                            " OR " +
-                            "LOWER(d.director_surname) like '%" + query.toLowerCase() + "%' ");
+                    sqlQuery.append("LOWER(d.director_name) like '%").append(query.toLowerCase()).append("%' ").append(" OR ").append("LOWER(d.director_surname) like '%").append(query.toLowerCase()).append("%' ");
                 }
             }
         }
