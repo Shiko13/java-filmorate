@@ -34,15 +34,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-<<<<<<< add-most-populars
     public Set<Film> getTopPopular(@RequestParam (required = false) @Positive Long genreId,
                                    @RequestParam (name = "year", required = false) @Min(1895) Integer releaseYear,
                                    @RequestParam (defaultValue = "10") @Positive int count) {
-=======
-    public Set<Film> getTopPopular(@RequestParam (defaultValue = "-1") Long genreId,
-                                          @RequestParam (name = "year", defaultValue = "-1") Integer releaseYear,
-                                          @RequestParam (defaultValue = "10") @Positive int count) {
->>>>>>> develop
         return filmService.getTopPopular(genreId, releaseYear, count);
     }
 
