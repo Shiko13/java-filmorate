@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/genres")
@@ -19,7 +19,7 @@ public class GenreController {
     private final FilmService filmService;
 
     @GetMapping
-    public Collection<Genre> findAll() {
+    public List<Genre> findAll() {
         return filmService.getAllGenres();
     }
 

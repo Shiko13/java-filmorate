@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -24,9 +22,6 @@ public class ReviewController {
 
     @PostMapping
     public Review create(@Valid @RequestBody Review review) {
-        /*if (review.getFilmId() == 0 || review.getUserId() == 0) {
-            throw new ValidationException("Поля filmId и userId должны быть заполнены");
-        }*/
         return reviewService.create(review);
     }
 
