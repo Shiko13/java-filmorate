@@ -122,10 +122,20 @@ public class FilmDbStorage implements FilmStorage {
         List<Director> directors = film.getDirectors().stream()
                 .distinct()
                 .collect(Collectors.toList());
-        for (Director director : directors) {
-            String sqlQueryGenre = "insert into film_directors values (?, ?)";
-            jdbcTemplate.update(sqlQueryGenre, film.getId(), director.getId());
-        }
+
+        jdbcTemplate.batchUpdate(
+                "insert into film_directors values (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setLong(1, film.getId());
+                        ps.setLong(2, directors.get(i).getId());
+                    }
+
+                    public int getBatchSize() {
+                        return directors.size();
+                    }
+                });
+
         film.setDirectors(directors);
     }
 
