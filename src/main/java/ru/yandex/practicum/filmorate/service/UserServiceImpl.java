@@ -5,15 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.*;
 import ru.yandex.practicum.filmorate.model.TypeOfEvent;
 import ru.yandex.practicum.filmorate.model.TypeOfOperation;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.UserEvent;
-import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,6 +21,10 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
+    private final LikeStorage likeStorage;
+    private final FilmStorage filmStorage;
+    private final DirectorStorage directorStorage;
+    private final GenreStorage genreStorage;
     private final UserEventListStorage userEventListStorage;
 
     @Override
@@ -45,6 +49,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<Film> getRecommendations(long id) {
+        List<Film> films = likeStorage.getRecommendations(id).stream()
+                .map(filmStorage::findById)
+                .collect(Collectors.toList());
+
+        genreStorage.set(films);
+        directorStorage.set(films);
+
+        return films;
+    }
+    
     public List<UserEvent> getEventListByUserId(long id) {
         log.debug("Start request GET to /users/{}/feed", id);
 
