@@ -73,15 +73,15 @@ public class FilmDbStorageTest {
                         assertThat(f).hasFieldOrPropertyWithValue("name", "Hot-2 in sea: Stagnetti's Revenge")
                 );
 
-        Set<Film> films = filmDbStorage.getTopPopular(-1L, -1, 1);
+        Set<Film> films = filmDbStorage.getTopPopular(null, null, 1);
         assertThat(films)
                 .hasSize(1);
 
-        Set<Film> films1 = filmDbStorage.getTopPopular(-1L, 2022, 10);
+        Set<Film> films1 = filmDbStorage.getTopPopular(null, 2022, 10);
         assertThat(films1)
                 .hasSize(1);
 
-        Set<Film> films2 = filmDbStorage.getTopPopular(1L, -1, 10);
+        Set<Film> films2 = filmDbStorage.getTopPopular(1L, null, 10);
         assertThat(films2)
                 .hasSize(1);
     }
