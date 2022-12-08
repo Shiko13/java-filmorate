@@ -123,13 +123,13 @@ public class FilmServiceImpl implements FilmService {
     public List<Film> searchFilmsByTitleByDirector(String query, List<FilmSearchBy> by) {
         log.debug("Start request GET to /films/search query = {}, by = {}", query, by);
         List<Film> films;
-        if (by.contains(FilmSearchBy.title) && by.contains(FilmSearchBy.director)) {
+        if (by.contains(FilmSearchBy.TITLE) && by.contains(FilmSearchBy.DIRECTOR)) {
             log.info("Запрошен поиск фильмов по {} среди названий и режиссёров", query);
             films = filmStorage.searchFilmsByTitleAndDirector(query);
-        } else if (by.contains(FilmSearchBy.title) && !by.contains(FilmSearchBy.director)) {
+        } else if (by.contains(FilmSearchBy.TITLE) && !by.contains(FilmSearchBy.DIRECTOR)) {
             log.info("Запрошен поиск фильмов по {} среди названий", query);
             films = filmStorage.searchFilmsByTitle(query);
-        } else if (!by.contains(FilmSearchBy.title) && by.contains(FilmSearchBy.director)) {
+        } else if (!by.contains(FilmSearchBy.TITLE) && by.contains(FilmSearchBy.DIRECTOR)) {
             log.info("Запрошен поиск фильмов по {} среди режиссёров", query);
             films = filmStorage.searchFilmsByDirector(query);
         } else {
