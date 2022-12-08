@@ -63,6 +63,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
         if (numRow == 0) {
             throw new NotFoundException(String.format("User with id = %d or user with id = %d not found", userOneId, userTwoId));
         }
+
     }
 
     @Override
@@ -81,6 +82,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
         return users;
     }
+
 
     public static User mapRow(SqlRowSet sqlRowSet) {
         return User.builder().

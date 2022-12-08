@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
 
@@ -19,6 +22,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public Review create(Review review) {
@@ -27,6 +31,10 @@ public class ReviewServiceImpl implements ReviewService {
 
         review = reviewStorage.create(review);
         log.debug("Добавлен отзыв к фильму id = {}", review.getFilmId());
+
+        userEventListStorage.addEvent(review.getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.ADD), review.getId());
+
         return review;
     }
 
@@ -34,11 +42,18 @@ public class ReviewServiceImpl implements ReviewService {
     public Review update(Review review) {
         review = reviewStorage.update(review);
         log.debug("Отредактирован отзыв к фильму id = {}", review.getFilmId());
+
+        userEventListStorage.addEvent(getByID(review.getId()).getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.UPDATE), review.getId());
+
         return review;
     }
 
     @Override
     public void remove(long reviewId) {
+        userEventListStorage.addEvent(getByID(reviewId).getUserId(), String.valueOf(TypeOfEvent.REVIEW),
+                String.valueOf(TypeOfOperation.REMOVE), reviewId);
+
         reviewStorage.remove(reviewId);
         log.debug("Удален отзыв id = {}", reviewId);
     }

@@ -12,8 +12,11 @@ public interface FilmStorage {
     void update(Film film);
     void deleteById(long id);
     void deleteAll();
-    Set<Film> readTopMostLiked(int count);
     List<Film> getSortByYearFromDirector(long directorId);
     List<Film> getSortByLikesFromDirector(long directorId);
-
+    List<Film> searchFilmsByTitleAndDirector(String query);
+    List<Film> searchFilmsByTitle(String query);
+    List<Film> searchFilmsByDirector(String query);
+    Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count);
+    Set<Film> getCommon(long userId, long friendId);
 }
