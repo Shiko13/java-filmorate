@@ -63,12 +63,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 CREATE TABLE IF NOT EXISTS reviews_likes (
     review_id BIGINT REFERENCES reviews (review_id) ON DELETE CASCADE,
     user_id BIGINT REFERENCES users (USER_ID) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, review_id)
-);
-
-CREATE TABLE IF NOT EXISTS reviews_dislikes (
-    review_id BIGINT REFERENCES reviews (review_id) ON DELETE CASCADE,
-    user_id BIGINT REFERENCES users (USER_ID) ON DELETE CASCADE,
+    is_positive BOOLEAN,
     PRIMARY KEY (user_id, review_id)
 );
 

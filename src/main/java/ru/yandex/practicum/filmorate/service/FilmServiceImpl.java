@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.FilmSearchBy;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.model.TypeOfEvent;
 import ru.yandex.practicum.filmorate.model.TypeOfOperation;
 import ru.yandex.practicum.filmorate.storage.*;

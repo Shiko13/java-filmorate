@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.ReviewService;
+import ru.yandex.practicum.filmorate.service.ReviewsLikeService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewsLikeStorage;
@@ -23,9 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ReviewDbStorageTest {
     private final ReviewStorage reviewStorage;
+    private final ReviewsLikeService reviewsLikeService;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private final ReviewService reviewService;
     private final ReviewsLikeStorage reviewsLikeStorage;
 
     @Test
@@ -113,7 +114,7 @@ public class ReviewDbStorageTest {
                 .hasValueSatisfying(o -> assertThat(o)
                         .hasFieldOrPropertyWithValue("content", "BBB"));
 
-        reviewService.addLike(1, 1);
+        reviewsLikeService.add(1, 1, true);
 
         Optional<Review> optionalReview3 = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview3)
@@ -121,28 +122,28 @@ public class ReviewDbStorageTest {
                 .hasValueSatisfying(o -> assertThat(o)
                         .hasFieldOrPropertyWithValue("useful", 1L));
 
-        Optional<Like> optionalLike = Optional.of(reviewsLikeStorage.getLikeById(1, 1));
+        Optional<Like> optionalLike = Optional.of(reviewsLikeStorage.get(1, 1, true));
         assertThat(optionalLike)
                 .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
                         .hasFieldOrPropertyWithValue("entityId", 1L)
                         .hasFieldOrPropertyWithValue("userId", 1L));
 
-        reviewService.removeLike(1,1);
+        reviewsLikeService.remove(1,1, true);
         Optional<Review> optionalReview4 = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview4)
                 .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
                         .hasFieldOrPropertyWithValue("useful", 0L));
 
-        reviewService.addDislike(1, 1);
+        reviewsLikeService.add(1, 1, false);
         Optional<Review> optionalReview5 = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview5)
                 .isPresent()
                 .hasValueSatisfying(o -> assertThat(o)
                         .hasFieldOrPropertyWithValue("useful", -1L));
 
-        reviewService.removeDislike(1,1);
+        reviewsLikeService.remove(1,1, false);
         Optional<Review> optionalReview6 = Optional.of(reviewStorage.getByID(1));
         assertThat(optionalReview6)
                 .isPresent()
