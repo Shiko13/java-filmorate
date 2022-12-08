@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface UserEventListStorage {
     List<UserEvent> getListById(long userId);
-    int addEvent(long userId , String eventType, String operation, long entityId);
+    void addEvent(long userId , String eventType, String operation, long entityId);
 }

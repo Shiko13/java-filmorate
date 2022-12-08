@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSearchBy;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -17,8 +18,8 @@ public interface FilmService extends Crud<Film> {
     Genre getGenreById(long genre_id);
     List<Mpa> getMpaRatings();
     Mpa getMpaRatingById(int mpaRatingId);
+    List<Film> searchFilmsByTitleByDirector(String query, List<FilmSearchBy> by);
     List<Film> getSortListByDirector(long directorId, FilmSortBy filmSortBy);
-    List<Film> searchFilmsByTitleByDirector(String query, String by);
     Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count);
     Set<Film> getCommon(long userId, long friendId);
 }

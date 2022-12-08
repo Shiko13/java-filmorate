@@ -8,6 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new StringToEnumConverter());
+        registry.addConverter(new StringToFilmSortByConverter());
+        registry.addConverter(new StringToFilmSearchByConverter());
     }
 }
