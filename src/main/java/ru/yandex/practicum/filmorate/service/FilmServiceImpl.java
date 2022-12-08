@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSearchBy;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -119,10 +120,21 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> searchFilmsByTitleByDirector(String query, String by) {
+    public List<Film> searchFilmsByTitleByDirector(String query, List<FilmSearchBy> by) {
         log.debug("Start request GET to /films/search query = {}, by = {}", query, by);
         List<Film> films;
-        films = filmStorage.searchFilmsByTitleByDirector(query, by);
+        if (by.contains(FilmSearchBy.title) && by.contains(FilmSearchBy.director)) {
+            log.info("Запрошен поиск фильмов по {} среди названий и режисеров", query);
+            films = filmStorage.searchFilmsByTitleAndDirector(query);
+        } else if (by.contains(FilmSearchBy.title) && !by.contains(FilmSearchBy.director)) {
+            log.info("Запрошен поиск фильмов по {} среди названий", query);
+            films = filmStorage.searchFilmsByTitle(query);
+        } else if (!by.contains(FilmSearchBy.title) && by.contains(FilmSearchBy.director)) {
+            log.info("Запрошен поиск фильмов по {} среди режисеров", query);
+            films = filmStorage.searchFilmsByDirector(query);
+        } else {
+            throw new ValidateException("Incorrect parameters of request");
+        }
         genreStorage.set(films);
         directorStorage.set(films);
 

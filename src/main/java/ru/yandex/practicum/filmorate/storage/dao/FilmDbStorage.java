@@ -233,13 +233,10 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
         return mapRowToFilmSet(sqlRowSet);
     }
-
-    public List<Film> searchFilmsByTitleByDirector(String query, String by) {
-        boolean isByContainTitle = by.toLowerCase().contains("title");
-        boolean isByContainDirector = by.toLowerCase().contains("director");
-        StringBuilder sqlQuery = new StringBuilder();
-        sqlQuery.append(
-                "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+    
+    @Override
+    public List<Film> searchFilmsByTitleAndDirector(String query) {
+        String sqlQuery = "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
                         "mr.mpa_rating_id, mr.mpa_rating_name, fl.rate "+
                         "FROM films AS f " +
                         "JOIN mpa_ratings AS mr ON (mr.mpa_rating_id = f.mpa_rating) " +
@@ -248,30 +245,53 @@ public class FilmDbStorage implements FilmStorage {
                         "FROM likes " +
                         "GROUP BY film_id) AS fl ON (fl.film_id = f.film_id) " +
                         "LEFT JOIN film_directors AS fd ON (fd.film_id = f.film_id)" +
-                        "LEFT JOIN directors AS d ON (fd.director_id = d.director_id) ");
-        if (query != null) {
-            if (isByContainTitle || isByContainDirector) {
-                sqlQuery.append(
-                        "WHERE ");
-                if (isByContainTitle) {
-                    sqlQuery.append(
-                            "LOWER(f.film_name) like '%" + query.toLowerCase() + "%' ");
-                }
-                if (isByContainDirector) {
-                    if (isByContainTitle) {
-                        sqlQuery.append(
-                                " OR ");
-                    }
-                    sqlQuery.append(
-                            "LOWER(d.director_name) like '%" + query.toLowerCase() + "%' " +
-                            " OR " +
-                            "LOWER(d.director_surname) like '%" + query.toLowerCase() + "%' ");
-                }
-            }
-        }
-        sqlQuery.append(
-                "ORDER BY fl.rate DESC ");
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery.toString());
+                        "LEFT JOIN directors AS d ON (fd.director_id = d.director_id) " +
+                        "WHERE " +
+                        "LOWER(f.film_name) like '%" + query.toLowerCase() + "%' " +
+                        " OR " +
+                        "LOWER(d.director_name) like '%" + query.toLowerCase() + "%' " +
+                        "ORDER BY fl.rate DESC ";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
+        Set<Film> films = mapRowToFilmSet(sqlRowSet);
+        return new ArrayList<>(films);
+    }
+    
+    @Override
+    public List<Film> searchFilmsByTitle(String query) {
+        String sqlQuery = "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "mr.mpa_rating_id, mr.mpa_rating_name, fl.rate "+
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON (mr.mpa_rating_id = f.mpa_rating) " +
+                "LEFT JOIN " +
+                "(SELECT film_id, COUNT(user_id) AS rate " +
+                "FROM likes " +
+                "GROUP BY film_id) AS fl ON (fl.film_id = f.film_id) " +
+                "LEFT JOIN film_directors AS fd ON (fd.film_id = f.film_id)" +
+                "LEFT JOIN directors AS d ON (fd.director_id = d.director_id) " +
+                "WHERE " +
+                "LOWER(f.film_name) like '%" + query.toLowerCase() + "%' " +
+                "ORDER BY fl.rate DESC ";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
+        Set<Film> films = mapRowToFilmSet(sqlRowSet);
+        return new ArrayList<>(films);
+    }
+    
+    @Override
+    public List<Film> searchFilmsByDirector(String query) {
+        String sqlQuery = "SELECT DISTINCT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "mr.mpa_rating_id, mr.mpa_rating_name, fl.rate "+
+                "FROM films AS f " +
+                "JOIN mpa_ratings AS mr ON (mr.mpa_rating_id = f.mpa_rating) " +
+                "LEFT JOIN " +
+                "(SELECT film_id, COUNT(user_id) AS rate " +
+                "FROM likes " +
+                "GROUP BY film_id) AS fl ON (fl.film_id = f.film_id) " +
+                "LEFT JOIN film_directors AS fd ON (fd.film_id = f.film_id)" +
+                "LEFT JOIN directors AS d ON (fd.director_id = d.director_id) " +
+                "WHERE " +
+                "LOWER(d.director_name) like '%" + query.toLowerCase() + "%' " +
+                "ORDER BY fl.rate DESC ";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery);
         Set<Film> films = mapRowToFilmSet(sqlRowSet);
         return new ArrayList<>(films);
     }
