@@ -14,6 +14,7 @@ public class LikeMapper implements RowMapper<Like> {
         return Like.builder()
                 .entityId(rs.getLong("review_id"))
                 .userId(rs.getLong("user_id"))
+                .isPositive(rs.getBoolean("is_positive"))
                 .build();
     }
 }

@@ -8,4 +8,5 @@ import lombok.Data;
 public class Like {
     private final Long entityId;
     private final Long userId;
+    private final Boolean isPositive;
 }

@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.dao.mappers.ReviewMapper;
 
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,6 +26,7 @@ public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final ReviewMapper reviewMapper;
     private final String[] PRIMARY_KEY = new String[]{"review_id"};
+    private final String NOT_EXIST = "Ревью c ID № %s не существует";
 
     @Override
     public Review create(Review review) {
@@ -40,9 +42,9 @@ public class ReviewDbStorage implements ReviewStorage {
             stmt.setString(4, review.getContent());
             return stmt;
         }, keyHolder);
-        if (keyHolder.getKey() == null) throw new CreationFailException("Не удалось создать отзыв");
 
-        return review.toBuilder().id(keyHolder.getKey().longValue()).build();
+        Optional<Long> optionalId = Optional.of(keyHolder.getKey().longValue());
+        return review.toBuilder().id(optionalId.orElseThrow(() -> new CreationFailException("Не удалось создать отзыв"))).build();
     }
 
     @Override
@@ -58,7 +60,7 @@ public class ReviewDbStorage implements ReviewStorage {
         );
 
         if (updatedReviewId == 0) {
-            throw new NotFoundException(String.format("Ревью c ID № %s не существует", review.getId()));
+            throw new NotFoundException(String.format(NOT_EXIST, review.getId()));
         }
 
         return review;
@@ -83,7 +85,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException(
-                        String.format("Ревью c ID № %s не существует", reviewId))
+                        String.format(NOT_EXIST, reviewId))
                 );
     }
 
@@ -119,13 +121,15 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void updateRating(long reviewId) {
         String sqlQuery = "UPDATE reviews AS r SET useful = " +
-                "(SELECT COUNT(l.user_id) from reviews_likes AS l  WHERE l.review_id = r.review_id) - " +
-                "(SELECT COUNT(d.user_id) from reviews_dislikes AS d  WHERE d.review_id = r.review_id) " +
+                "(SELECT COUNT(l.user_id) from reviews_likes AS l  " +
+                "WHERE l.review_id = r.review_id AND l.is_positive = true) - " +
+                "(SELECT COUNT(d.user_id) from reviews_likes AS d " +
+                "WHERE d.review_id = d.review_id AND d.is_positive = false) " +
                 "WHERE r.review_id = ?";
 
         int updatedReviewId = jdbcTemplate.update(sqlQuery, reviewId);
         if (updatedReviewId == 0) {
-            throw new NotFoundException(String.format("Ревью c ID № %s не существует", reviewId));
+            throw new NotFoundException(String.format(NOT_EXIST, reviewId));
         }
 
         log.debug("Рейтинг отзывова id = {} изменен", reviewId);
