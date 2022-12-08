@@ -221,11 +221,11 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Set<Film> getTopPopular(Long genreId, Integer releaseYear, int count) {
         String sqlQuery;
-        if (genreId < 1 && releaseYear < 1) {
+        if (genreId == null && releaseYear == null) {
             sqlQuery = getTopPopularQuery(count);
-        } else if (genreId > 0 && releaseYear < 1) {
+        } else if (releaseYear == null) {
             sqlQuery = getTopPopularQuery(genreId, count);
-        } else if (genreId < 0) {
+        } else if (genreId == null) {
             sqlQuery = getTopPopularQuery(releaseYear, count);
         } else {
             sqlQuery = getTopPopularQuery(genreId, releaseYear, count);
@@ -336,18 +336,21 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private String getTopPopularQuery(Long genreId, int count) {
-        return getTopPopularQuery() + "join film_genres as fg on f.film_id = fg.film_id " +
+        return getTopPopularQuery() +
+                "join film_genres as fg on f.film_id = fg.film_id " +
                 "join genres as g on g.genre_id = fg.genre_id where g.genre_id = " + genreId + " " +
                 "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
     }
 
     private String getTopPopularQuery(Integer releaseYear, int count) {
-        return getTopPopularQuery() + "where extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
+        return getTopPopularQuery() +
+                "where extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
                 "group by f.film_id order by count(l.FILM_ID) desc limit " + count;
     }
 
     private String getTopPopularQuery(Long genreId, Integer releaseYear, int count) {
-        return getTopPopularQuery() + "join film_genres as fg on f.film_id = fg.film_id " +
+        return getTopPopularQuery() +
+                "join film_genres as fg on f.film_id = fg.film_id " +
                 "join genres as g on g.genre_id = fg.genre_id " +
                 "where g.genre_id = " + genreId + " AND " +
                 "extract (year from f.RELEASE_DATE) = " + releaseYear + " " +
