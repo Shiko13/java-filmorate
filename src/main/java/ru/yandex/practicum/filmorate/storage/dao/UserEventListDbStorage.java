@@ -35,10 +35,10 @@ public class UserEventListDbStorage implements UserEventListStorage {
     }
 
     @Override
-    public int addEvent(long userId, String eventType, String operation, long entityId) {
+    public void addEvent(long userId, String eventType, String operation, long entityId) {
         String sqlQuery = "insert into event_list(timestamps,user_id,event_type,operation,entity_id )" +
                 " values (?, ?, ?, ?,  ?)";
-        return  jdbcTemplate.update(sqlQuery, Instant.now().toEpochMilli() ,
+        jdbcTemplate.update(sqlQuery, Instant.now().toEpochMilli(),
                 userId, eventType, operation, entityId);
     }
 

@@ -124,13 +124,13 @@ public class FilmServiceImpl implements FilmService {
         log.debug("Start request GET to /films/search query = {}, by = {}", query, by);
         List<Film> films;
         if (by.contains(FilmSearchBy.title) && by.contains(FilmSearchBy.director)) {
-            log.info("Запрошен поиск фильмов по {} среди названий и режисеров", query);
+            log.info("Запрошен поиск фильмов по {} среди названий и режиссёров", query);
             films = filmStorage.searchFilmsByTitleAndDirector(query);
         } else if (by.contains(FilmSearchBy.title) && !by.contains(FilmSearchBy.director)) {
             log.info("Запрошен поиск фильмов по {} среди названий", query);
             films = filmStorage.searchFilmsByTitle(query);
         } else if (!by.contains(FilmSearchBy.title) && by.contains(FilmSearchBy.director)) {
-            log.info("Запрошен поиск фильмов по {} среди режисеров", query);
+            log.info("Запрошен поиск фильмов по {} среди режиссёров", query);
             films = filmStorage.searchFilmsByDirector(query);
         } else {
             throw new ValidateException("Incorrect parameters of request");

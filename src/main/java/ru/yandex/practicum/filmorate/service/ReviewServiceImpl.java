@@ -91,7 +91,7 @@ public class ReviewServiceImpl implements ReviewService {
         boolean isSuccess = reviewsLikeStorage.addLike(reviewId, userId);
         if (isSuccess) {
             reviewStorage.updateRating(reviewId);
-            log.debug("Добавлен лайк отзывову id = {}", reviewId);
+            log.debug("Добавлен лайк отзыву id = {}", reviewId);
         }
     }
 
@@ -108,7 +108,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         boolean isSuccess = reviewsLikeStorage.addDislike(reviewId, userId);
         if (isSuccess) {
-            log.debug("Добавлен дизлайк отзывову id = {}", reviewId);
+            log.debug("Добавлен дизлайк отзыву id = {}", reviewId);
             reviewStorage.updateRating(reviewId);
         }
     }
@@ -126,7 +126,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         boolean isSuccess = reviewsLikeStorage.removeLike(reviewId, userId);
         if (isSuccess) {
-            log.debug("Удален лайк отзывову id = {}", reviewId);
+            log.debug("Удален лайк отзыву id = {}", reviewId);
             reviewStorage.updateRating(reviewId);
         }
     }
@@ -145,7 +145,7 @@ public class ReviewServiceImpl implements ReviewService {
         boolean isSuccess = reviewsLikeStorage.removeDislike(reviewId, userId);
         if (isSuccess) {
             reviewStorage.updateRating(reviewId);
-            log.debug("Удален дизлайк отзывову id = {}", reviewId);
+            log.debug("Удален дизлайк отзыву id = {}", reviewId);
         }
     }
 }

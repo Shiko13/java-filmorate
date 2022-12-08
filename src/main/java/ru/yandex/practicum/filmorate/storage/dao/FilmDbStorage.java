@@ -224,7 +224,7 @@ public class FilmDbStorage implements FilmStorage {
             sqlQuery = getTopPopularQuery(count);
         } else if (genreId > 0 && releaseYear < 1) {
             sqlQuery = getTopPopularQuery(genreId, count);
-        } else if (genreId < 0 && releaseYear > 0) {
+        } else if (genreId < 0) {
             sqlQuery = getTopPopularQuery(releaseYear, count);
         } else {
             sqlQuery = getTopPopularQuery(genreId, releaseYear, count);

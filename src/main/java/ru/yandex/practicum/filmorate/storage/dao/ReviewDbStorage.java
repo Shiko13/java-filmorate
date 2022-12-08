@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.CreationFailException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
 import ru.yandex.practicum.filmorate.storage.dao.mappers.ReviewMapper;
 
 import java.sql.PreparedStatement;
@@ -129,7 +128,7 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new NotFoundException(String.format("Ревью c ID № %s не существует", reviewId));
         }
 
-        log.debug("Рейтинг отзывова id = {} изменен", reviewId);
+        log.debug("Рейтинг отзыва id = {} изменен", reviewId);
     }
 
     private List<Review> sortReviews(List<Review> reviews) {

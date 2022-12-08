@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserEventListStorage;
-
 
 import java.util.List;
 
@@ -48,7 +46,7 @@ public class LikeDbStorage implements LikeStorage {
     @Override
     public List<Long> getRecommendations(long userId) {
         String sqlQueryUser = "select l3.film_id from\n" +
-                "(select l1.user_id, count(l1.film_id) count from likes as l\n" +
+                "(select l1.user_id, count(l1.film_id) as count from likes as l\n" +
                 "left join likes as l1 on l.film_id = l1.film_id\n" +
                 "where l.user_id = ? and l.user_id <> l1.user_id\n" +
                 "group by l1.user_id order by count desc limit 1) as sub\n" +
