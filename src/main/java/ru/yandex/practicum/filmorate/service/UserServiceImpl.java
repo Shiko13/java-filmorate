@@ -1,26 +1,34 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.model.TypeOfEvent;
+import ru.yandex.practicum.filmorate.model.TypeOfOperation;
+import ru.yandex.practicum.filmorate.model.UserEvent;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
-
-    @Autowired
-    public UserServiceImpl(@Qualifier("userDb") UserStorage userStorage, FriendshipStorage friendshipStorage) {
-        this.userStorage = userStorage;
-        this.friendshipStorage = friendshipStorage;
-    }
+    private final LikeStorage likeStorage;
+    private final FilmStorage filmStorage;
+    private final DirectorStorage directorStorage;
+    private final GenreStorage genreStorage;
+    private final UserEventListStorage userEventListStorage;
 
     @Override
     public List<User> getAll() {
@@ -44,8 +52,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<Film> getRecommendations(long id) {
+        List<Film> films = likeStorage.getRecommendations(id).stream()
+                .map(filmStorage::findById)
+                .collect(Collectors.toList());
+
+        genreStorage.set(films);
+        directorStorage.set(films);
+
+        return films;
+    }
+    
+    public List<UserEvent> getEventListByUserId(long id) {
+        log.debug("Start request GET to /users/{}/feed", id);
+
+        return userEventListStorage.getListById(id);
+    }
+
+    @Override
     public List<User> getAllFriends(long id) {
         log.debug("Start request GET to /users/{}/friends", id);
+
+        getById(id);
 
         return friendshipStorage.readAll(id);
     }
@@ -75,6 +103,9 @@ public class UserServiceImpl implements UserService {
         }
 
         friendshipStorage.create(userId, friendId);
+
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.FRIEND), String.valueOf(TypeOfOperation.ADD),
+                friendId);
     }
 
     @Override
@@ -96,5 +127,8 @@ public class UserServiceImpl implements UserService {
         log.debug("Start request DELETE to /users/{}/friends/{}", userId, friendId);
 
         friendshipStorage.delete(userId, friendId);
+
+        userEventListStorage.addEvent(userId, String.valueOf(TypeOfEvent.FRIEND), String.valueOf(TypeOfOperation.REMOVE),
+                friendId);
     }
 }

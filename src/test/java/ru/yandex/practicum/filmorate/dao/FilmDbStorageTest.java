@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDbStorage;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,9 +59,10 @@ public class FilmDbStorageTest {
                 .id(1)
                 .name("Hot-2 in sea: Stagnetti's Revenge")
                 .description("Casino and some problems")
-                .releaseDate(LocalDate.of(1994, 10, 10))
+                .releaseDate(LocalDate.of(2022, 10, 10))
                 .duration(69)
                 .mpa(mpa)
+                .genres(List.of(Genre.builder().id(1).build()))
                 .build();
 
         Optional<Film> testUpdateFilm = Optional.of(filmDbStorage.create(updateFilm));
@@ -68,6 +72,18 @@ public class FilmDbStorageTest {
                 .hasValueSatisfying(f ->
                         assertThat(f).hasFieldOrPropertyWithValue("name", "Hot-2 in sea: Stagnetti's Revenge")
                 );
+
+        Set<Film> films = filmDbStorage.getTopPopular(null, null, 1);
+        assertThat(films)
+                .hasSize(1);
+
+        Set<Film> films1 = filmDbStorage.getTopPopular(null, 2022, 10);
+        assertThat(films1)
+                .hasSize(1);
+
+        Set<Film> films2 = filmDbStorage.getTopPopular(1L, null, 10);
+        assertThat(films2)
+                .hasSize(1);
     }
 }
 
